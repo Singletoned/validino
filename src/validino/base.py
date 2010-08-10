@@ -216,11 +216,13 @@ class Schema(object):
                  subvalidators,
                  msg=None,
                  allow_missing=True,
-                 allow_extra=True):
+                 allow_extra=True,
+                 filter_extra=True):
         self.subvalidators=subvalidators
         self.msg=msg
         self.allow_missing=allow_missing
         self.allow_extra=allow_extra
+        self.filter_extra=filter_extra
 
     def _keys(self):
         schemakeys=set()
@@ -234,7 +236,10 @@ class Schema(object):
 
 
     def __call__(self, data):
-        res={}
+        if not self.filter_extra:
+            res = data
+        else:
+            res={}
         exceptions={}
         if not (self.allow_extra and self.allow_missing):
             inputkeys=set(data.keys())

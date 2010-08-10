@@ -260,7 +260,17 @@ def test_schema_3():
     assert_invalid(lambda: v(d3), 'missing')
     d4=dict(x=10, y=10, text='ho', pingpong='lather')
     assert_invalid(lambda: v(d4), 'extra')
-    
+
+def test_filter_missing():
+    s = V.Schema(
+        dict(
+            x=V.integer(),
+            y=V.integer()),
+        filter_extra=False)
+
+    d1 = dict(x="1", y="2", foo="bar")
+    expected = dict(x=1, y=2, foo="bar")
+    assert s(d1) == expected
 
 def test_strip():
     assert V.strip('   foo   ')=='foo'
