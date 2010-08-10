@@ -1,8 +1,11 @@
+import py
+
 import validino as V
 from util import assert_invalid
 
 
 def test_email():
+    py.test.importorskip("pydns")
     v = V.email()
     e = "jsmullyan@scazzab.com"
     assert v(e) == e
