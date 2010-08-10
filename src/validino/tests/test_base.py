@@ -62,7 +62,7 @@ def test_boolean():
     with py.test.raises(V.Invalid) as e:
         validator("True")
     errors = e.value.unpack_errors()
-    assert errors == {None:["Is not boolean"]}
+    assert errors == {None:"Is not boolean"}
 
 
 def test_to_boolean():
@@ -431,7 +431,7 @@ def test_unpack_1():
                  'dong' : [V.Invalid('piddle')]})
     res = e.unpack_errors()
     print res
-    assert res == {'ding' : ['pod'], 'dong' : ['piddle']}
+    assert res == {'ding' : 'pod', 'dong' : 'piddle'}
     e2 = V.Invalid({'' : [e]})
     res2 = e.unpack_errors()
     print res2
@@ -464,20 +464,20 @@ def test_unpack_3():
     print u
     assert set(u) == set(('frog', 'dog', 'insect'))
     for v in u.itervalues():
-        assert isinstance(v, list)
-        assert len(v) == 1
+        assert isinstance(v, basestring)
+        # assert len(v) == 1
 
     e2 = V.Invalid(frog='squished')
     u2 = e2.unpack_errors()
-    assert u2 == dict(frog=['squished'])
+    assert u2 == dict(frog='squished')
 
     e3 = V.Invalid(errors,
-                 {'' : [e2]})
+                 {'' : e2})
     u3 = e3.unpack_errors()
     assert set(u3) == set(('frog', 'dog', 'insect'))
     for k, v in u3.iteritems():
-        assert isinstance(v, list)
-        if k == 'frog':
-            assert len(v) == 2
-        else:
-            assert len(v) == 1
+        assert isinstance(v, basestring)
+        # if k == 'frog':
+        #     assert len(v) == 2
+        # else:
+        #     assert len(v) == 1

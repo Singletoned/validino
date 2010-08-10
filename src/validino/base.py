@@ -150,7 +150,7 @@ class Invalid(Exception):
     def add_error_message(self, key, message):
         _add_error_message(self.errors, key, message)
 
-    def unpack_errors(self, force_dict=True):
+    def unpack_errors(self, force_dict=True, list_of_errors=False):
         if self.errors or force_dict:
             if self.message:
                 # drop the top level message if it is empty
@@ -176,6 +176,10 @@ class Invalid(Exception):
                                 self._safe_append(result, name, unpacked)
                     else:
                         self._safe_append(result, name, m)
+
+        if not list_of_errors:
+            result = dict([(e, m[0]) for e, m in result.items() if m])
+
         return result
 
 
