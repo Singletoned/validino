@@ -24,6 +24,8 @@ __all__ = [
     'is_scalar',
     'not_equal',
     'integer',
+    'boolean',
+    'to_boolean',
     'not_empty',
     'not_belongs',
     'belongs',
@@ -614,6 +616,41 @@ def integer(msg=None):
                                "integer",
                                "not an integer"))
     f.msg = msg
+    return f
+
+def boolean(msg=None):
+    """
+    Ensures the value is one of True or False
+
+    >>> validator = boolean(msg='Is not boolean')
+    >>> validator(True)
+    True
+    >>> validator('true')
+    Traceback (most recent call last):
+    ...
+    Invalid: ['Is not boolean']
+    """
+    def f(value):
+        if value in [True, False]:
+            return value
+        else:
+            raise Invalid(_msg(msg, 'boolean', 'not a boolean'))
+    return f
+
+def to_boolean(msg=None):
+    """
+    Coerces the value to one of True or False
+
+    >>> validator = to_boolean(msg='Me no convert to boolean')
+    >>> validator('true')
+    True
+    >>> validator(0)
+    False
+    >>> validator([])
+    False
+    """
+    def f(value):
+        return bool(value)
     return f
 
 def regex(pat, msg=None):

@@ -55,6 +55,28 @@ def test_nested_with_bad_data():
         validator(data)
 
 
+def test_boolean():
+    validator = V.boolean("Is not boolean")
+    assert validator(True) == True
+    assert validator(False) == False
+    with py.test.raises(V.Invalid) as e:
+        validator("True")
+    errors = e.value.unpack_errors()
+    assert errors == {None:["Is not boolean"]}
+
+
+def test_to_boolean():
+    validator = V.to_boolean()
+    def do_test(v, t_or_f):
+        assert validator(v) == t_or_f
+    true_values = [True, 'True', 'False', 'true', 'None', 1, object()]
+    false_values = [False, '', [], {}, 0, None]
+    for v in true_values:
+        yield do_test, v, True
+    for v in false_values:
+        yield do_test, v, False
+
+
 def test_is_scalar():
     msg = 'sc'
     v = V.is_scalar(msg=msg)
