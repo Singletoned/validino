@@ -114,6 +114,9 @@ def test_clamp():
     assert v(40) == 40
     assert_invalid(lambda: v(120), 'kong')
 
+    v = V.clamp(max=100, msg=dict(min='haha'))
+    assert_invalid(lambda: v(120), 'value above maximum')
+
 
 def test_clamp_length():
     msg = 'You are a pear'

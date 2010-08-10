@@ -2,7 +2,6 @@ import datetime
 import re
 import time
 
-from .messages import getMessages
 
 __all__ = [
     'Invalid',
@@ -56,11 +55,13 @@ def _msg(msg, key, default):
     """
     internal message-handling routine.
     """
-    if msg is None:
-        msg = getMessages()
-    if isinstance(msg, basestring):
-        return msg
-    return msg.get(key, default)
+    try:
+        return msg.get(key, default)
+    except AttributeError:
+        if msg is None:
+            return default
+        else:
+            return msg
 
 def dict_nest(data, separator='.'):
     """
