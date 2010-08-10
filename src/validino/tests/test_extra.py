@@ -9,7 +9,7 @@ def test_email():
     v=V.email(True, 'snog')
     assert v(e)==e
     assert_invalid(lambda: v('notrealatall@zzzzonononononofgfgfg.dfg'), 'snog')
-    
+
 def test_ip():
     v=V.ip('donkey')
     i='192.168.1.243'
@@ -27,7 +27,7 @@ def test_credit_card_1():
     assert v((cc, 'Visa'))==(cc, 'Visa')
 
 
-def test_credit_card_2():    
+def test_credit_card_2():
     cc='4000000000998'
     invalid_cc=str(int(cc)-1)
     validators=dict(cc_card=(V.strip, V.not_empty("Please enter a credit card number")),
@@ -37,7 +37,7 @@ def test_credit_card_2():
                     cc_type_field='cc_type')
     validators[('cc_card', 'cc_type')]=v
     s=V.Schema(validators)
-                                                         
+
     data=dict(cc_card=cc,
               cc_type='Visa')
     assert s(data)==data
@@ -59,7 +59,7 @@ def test_credit_card_2():
         assert set(errors.keys())==set((None, 'cc_type'))
     else:
         assert False, "there should be an error"
-    
+
 def test_credit_card_3():
     cc='4000000000998'
     invalid_cc=str(int(cc)-1)
@@ -79,7 +79,7 @@ def test_credit_card_3():
         assert set(errors)==set(('cc_card', 'cc_type', None))
     else:
         assert False, "there should be an error"
-    
+
 
 def test_url():
     v=V.url()

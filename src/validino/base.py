@@ -59,7 +59,7 @@ def _msg(msg, key, default):
         return msg
     return msg.get(key, default)
 
-         
+
 def dict_nest(data, separator='.'):
     """
     takes a flat dictionary with string keys and turns it into a
@@ -93,7 +93,7 @@ def dict_unnest(data, separator='.'):
         else:
             res[k]=v
     return res
-        
+
 class Invalid(Exception):
     # this should support nested exceptions and
     # extracting messages from some context
@@ -116,7 +116,7 @@ class Invalid(Exception):
         else:
             self.message=None
 
-        
+
     @staticmethod
     def _join_dicts(res, d):
         for k, v in d.iteritems():
@@ -150,7 +150,7 @@ class Invalid(Exception):
 
     def add_error_message(self, key, message):
         _add_error_message(self.errors, key, message)
-        
+
 
     def unpack_errors(self, force_dict=True):
         if self.errors or force_dict:
@@ -161,7 +161,7 @@ class Invalid(Exception):
                 result={}
         else:
             return self.message
-        
+
         if self.errors:
             for name, msglist in self.errors.iteritems():
                 for m in msglist:
@@ -170,7 +170,7 @@ class Invalid(Exception):
                             unpacked=m.unpack_errors(force_dict=False)
                         except AttributeError:
                             self._safe_append(result, name, m.args[0])
-                        
+
                         else:
                             if isinstance(unpacked, dict):
                                 self._join_dicts(result, unpacked)
@@ -178,7 +178,7 @@ class Invalid(Exception):
                                 self._safe_append(result, name, unpacked)
                     else:
                         self._safe_append(result, name, m)
-        
+
         return result
 
 
@@ -211,7 +211,7 @@ class Schema(object):
     give rise to an error.  Similarly, if allow_extra is False, any
     extra keys will result in an error.
 
-    """    
+    """
     def __init__(self,
                  subvalidators,
                  msg=None,
@@ -254,7 +254,7 @@ class Schema(object):
                     raise Invalid(_msg(self.msg,
                                        'schema.missing',
                                        'missing keys in input'))
-                
+
         for k in sorted(self.subvalidators):
             vfunc=self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
@@ -284,8 +284,8 @@ class Schema(object):
                                "schema.error",
                                "Problems were found in the submitted data."),
                           exceptions)
-        return res        
-            
+        return res
+
 
 def confirm_type(typespec, msg=None):
     def f(value):
@@ -352,7 +352,7 @@ def is_list(msg=None, listtypes=(list,)):
                                "expected list value"))
         return value
     f.listtypes=listtypes
-    f.msg=msg    
+    f.msg=msg
     return f
 
 def to_scalar(listtypes=(list,)):
@@ -395,7 +395,7 @@ def default(defaultValue):
         return value
     f.defaultValue=defaultValue
     return f
-        
+
 def either(*validators):
     """
     Tries each of a series of validators in turn, swallowing any
@@ -417,7 +417,7 @@ def either(*validators):
 def compose(*validators):
     """
     Applies each of a series of validators in turn, passing the return
-    value of each to the next.  
+    value of each to the next.
     """
     def f(value):
         for v in validators:
@@ -431,7 +431,7 @@ def check(*validators):
     against input data, which is passed to each validator in turn,
     ignoring the validators return value.  The function returns the
     original input data (which, if it mutable, may have been changed).
-    
+
     """
     def f(value):
         for v in validators:
@@ -594,7 +594,7 @@ def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
     """
-    
+
     def f(value):
         v=parse_time(f.format, f.msg)(value)
         return datetime.date(*v[:3])
@@ -606,13 +606,13 @@ def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
     """
-    
+
     def f(value):
         v=parse_time(f.format, f.msg)(value)
         return datetime.datetime(*v[:6])
     f.format=format
     f.msg=msg
-    return f                
+    return f
 
 def integer(msg=None):
     """
@@ -633,7 +633,7 @@ def regex(pat, msg=None):
     """
     tests the value against the given regex pattern
     and raises Invalid if it doesn't match.
-    
+
     """
     def f(value):
         m=re.match(f.pat, value)

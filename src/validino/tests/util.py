@@ -11,4 +11,3 @@ def assert_invalid(f, msg):
             assert e.errors==msg, "expected '%s', got '%s'" % (msg, e.errors)
     else:
         assert False, "exception should be raised"
-

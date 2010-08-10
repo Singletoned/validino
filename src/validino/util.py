@@ -7,4 +7,3 @@ except ImportError:
             d.update(_kw)
             return func(*(args + _args), **d)
         return inner
-

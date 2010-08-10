@@ -44,7 +44,7 @@ cards=(MASTERCARD,
              'Discover',
              'En Route',
              'JCB')
-          
+
 card_table=[(MASTERCARD, '51', (16,)),
             (MASTERCARD, '52', (16,)),
             (MASTERCARD, '53', (16,)),
@@ -182,7 +182,7 @@ def _gen_fake(cctype,
     elif not (start.startswith(prefix) and len(start)==length):
         raise ValueError, "starting value %s inconsistent with "\
               "prefix %s and length %s" % (start, prefix, length)
-    
+
     res=[]
     while 1:
         if len(start)!=length or not start.startswith(prefix):
@@ -196,7 +196,3 @@ def _gen_fake(cctype,
             pass
         start=str(long(start)+1)
     return res
-
-        
-     
-    

@@ -37,8 +37,5 @@ else:
             yield
         finally:
             _messagelocal.messages=oldmessages
-            
+
     __all__.append('msg')
-    
-
-

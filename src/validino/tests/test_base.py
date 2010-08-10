@@ -24,8 +24,8 @@ def test_to_list():
     v=V.to_list()
     assert v(['a', 'b'])==['a', 'b']
     assert v('a')==['a']
-    
-    
+
+
 def test_clamp():
     msg='You are a pear'
     v=V.clamp(min=30, msg=msg)
@@ -45,7 +45,7 @@ def test_clamp_length():
     v=V.clamp_length(max=10, msg=dict(minlen='haha', maxlen='kong'))
     assert v('40')=='40'
     assert_invalid(lambda: v('I told you that Ronald would eat it when you were in the bathroom'), 'kong')
-    
+
 
 def test_compose():
     messages=dict(integer='please enter an integer',
@@ -75,7 +75,7 @@ def test_check():
     d2=V.check(add_z, partial(len_d, size=3))(d)
     assert d2 is d
     assert d['z']==300
-    
+
 def test_default():
     v=V.default("pong")
     assert v(None)=='pong'
@@ -112,7 +112,7 @@ def test_empty():
     assert v('')==''
     assert v(None)==None
     assert_invalid(lambda: v("bob"), 'scorch me')
-    
+
 def test_equal():
     v=V.equal('egg', msg="not equal")
     assert v('egg')=='egg'
@@ -156,7 +156,7 @@ def test_parse_date():
     assert dt.year==2007
     assert dt.month==7
     assert dt.day==2
-    
+
 def test_parse_datetime():
     fmt='%m %d %Y %H:%M'
     msg='Gargantua and Pantagruel'
@@ -165,7 +165,7 @@ def test_parse_datetime():
     assert dt.year==2007
     assert dt.hour==12
     assert dt.minute==34
-    
+
 
 def test_parse_time():
     fmt='%m %d %Y'
@@ -174,7 +174,7 @@ def test_parse_time():
     ts=v('10 03 2007')[:3]
     assert ts==(2007, 10, 3)
     assert_invalid(lambda: v('tough nuggie'), msg)
-    
+
 
 def test_regex():
     v=V.regex('shrubbery\d{3}$', 'regex')
@@ -214,7 +214,7 @@ def test_schema_1():
     assert data['username']==newdata['username']
     assert int(data['user_id'])==newdata['user_id']
     assert data['department']==newdata['department']
-    
+
 def test_schema_2():
     s=V.Schema(
         dict(x=(V.integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
@@ -239,7 +239,7 @@ def test_schema_2():
     d4=dict(x=10, y=10, text='ho', pingpong='lather')
     assert_invalid(lambda: v(d4), 'extra data')
 
-             
+
 def test_schema_3():
     v=V.Schema(
         dict(x=(V.integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
@@ -277,8 +277,8 @@ def test_strip():
     assert V.strip(None)==None
 
 
-    
-    
+
+
 def test_fields_match():
     d=dict(foo=3,
            goo=3,
@@ -303,7 +303,7 @@ def test_excursion():
                             msg='pancreatic'))
     assert x==v(x)
     assert_invalid(lambda: v('hieratic impulses'), 'pancreatic')
-    
+
 
 def test_confirm_type():
     v=V.confirm_type((int, float), 'not a number')
@@ -330,7 +330,7 @@ def test_map():
     assert v(data)==data
 
 def test_unpack_1():
-    
+
     e=V.Invalid({'ding' : [V.Invalid('pod')],
                  'dong' : [V.Invalid('piddle')]})
     res=e.unpack_errors()
@@ -344,8 +344,8 @@ def test_unpack_1():
 
 def test_unpack_2():
     e=V.Invalid({'ding' : [V.Invalid('pod')],
-                 'dong' : [V.Invalid('piddle')]})    
-    
+                 'dong' : [V.Invalid('piddle')]})
+
     e2=V.Invalid({'' : [e]})
     e3=V.Invalid({'' : [e2]})
     r1=e.unpack_errors()
@@ -384,5 +384,5 @@ def test_unpack_3():
             assert len(v)==2
         else:
             assert len(v)==1
-                
-                            
+
+

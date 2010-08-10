@@ -46,15 +46,15 @@ def email(check_dns=False, msg=None):
             raise Invalid(_msg(f.msg,
                                'email.domain',
                                'invalid domain'))
-        
+
         if f.check_dns:
             try:
                 a=DNS.DnsRequest(domain, qtype='mx').req().answers
                 if not a:
                     a=DNS.DnsRequest(domain, qtype='a').req().answers
                 dnsdomains=[x['data'] for x in a]
-	    except (socket.error, DNS.DNSError), e:
-		raise Invalid(_msg(f.msg,
+            except (socket.error, DNS.DNSError), e:
+                raise Invalid(_msg(f.msg,
                                    'email.socket_error',
                                    'socket error'))
             if not dnsdomains:
@@ -81,16 +81,16 @@ def credit_card(types=None,
             cardnumber, cc_type=values, None
 
         exc=Invalid()
-        
+
         type_ok=not f.require_type
-        
+
         if f.require_type and cc_type is None:
             m=_msg(f.msg,
                    "credit_card.require_type",
                    "no credit card type specified")
             exc.add_error_message(f.cc_type_field, m)
 
-            
+
         elif not (cc_type is None) and cc_type not in f.types:
             m=_msg(f.msg,
                    "credit_card.type_check",
@@ -121,7 +121,7 @@ def credit_card(types=None,
     f.cc_field=cc_field
     f.cc_type_field=cc_type_field
     return f
-                               
+
 _ip_pat='^%s$' % r'\.'.join(['|'.join([str(x) for x in range(256)]*4)])
 
 ip=partial(regex, _ip_pat)
@@ -140,7 +140,7 @@ def url(check_exists=False,
     def f(value):
         if f.check_exists and set(f.schemas).difference(set(('http', 'https'))):
             m="existence check not supported for schemas other than http and https"
-            raise RuntimeError(m)        
+            raise RuntimeError(m)
         schema, netloc, path, params, query, fragment=urlparse.urlparse(value)
         if schema not in f.schemas:
             raise Invalid(_msg(f.msg,
@@ -171,7 +171,7 @@ def url(check_exists=False,
                                    "http error"))
             else:
                 if 200 <= res.status < 400:
-                    # this fudges on redirects.  
+                    # this fudges on redirects.
                     return url
                 raise Invalid(_msg(f.msg,
                                    'url.not_exists',
