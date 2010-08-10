@@ -5,7 +5,7 @@ from validino.messages import msg, getMessages
 from util import assert_invalid
 
 def test_msg():
-    messages=dict(
+    messages = dict(
         integer="hey, I said use a number")
     with msg(messages):
         assert messages == getMessages()

@@ -4,39 +4,40 @@ import time
 
 from .messages import getMessages
 
-__all__=['Invalid',
-         'check',
-         'clamp',
-         'clamp_length',
-         'compose',
-         'confirm_type',
-         'default',
-         'dict_nest',
-         'dict_unnest',
-         'either',
-         'empty',
-         'equal',
-         'excursion',
-         'fields_equal',
-         'fields_match',
-         'is_list',
-         'is_scalar',
-         'not_equal',
-         'integer',
-         'not_empty',
-         'not_belongs',
-         'belongs',
-         'parse_date',
-         'parse_datetime',
-         'parse_time',
-         'regex',
-         'regex_sub',
-         'Schema',
-         'strip',
-         'to_list',
-         'to_scalar',
-         'to_unicode',
-         'translate']
+__all__ = [
+    'Invalid',
+    'check',
+    'clamp',
+    'clamp_length',
+    'compose',
+    'confirm_type',
+    'default',
+    'dict_nest',
+    'dict_unnest',
+    'either',
+    'empty',
+    'equal',
+    'excursion',
+    'fields_equal',
+    'fields_match',
+    'is_list',
+    'is_scalar',
+    'not_equal',
+    'integer',
+    'not_empty',
+    'not_belongs',
+    'belongs',
+    'parse_date',
+    'parse_datetime',
+    'parse_time',
+    'regex',
+    'regex_sub',
+    'Schema',
+    'strip',
+    'to_list',
+    'to_scalar',
+    'to_unicode',
+    'translate']
 
 
 def _add_error_message(d, k, msg):
@@ -53,7 +54,7 @@ def _msg(msg, key, default):
     internal message-handling routine.
     """
     if msg is None:
-        msg=getMessages()
+        msg = getMessages()
     if isinstance(msg, basestring):
         return msg
     return msg.get(key, default)
@@ -63,14 +64,14 @@ def dict_nest(data, separator='.'):
     takes a flat dictionary with string keys and turns it into a
     nested one by splitting keys on the given separator.
     """
-    res={}
+    res = {}
     for k in data:
-        levels=k.split(separator)
-        d=res
+        levels = k.split(separator)
+        d = res
         for k1 in levels[:-1]:
             d.setdefault(k1, {})
-            d=d[k1]
-        d[levels[-1]]=data[k]
+            d = d[k1]
+        d[levels[-1]] = data[k]
     return res
 
 def dict_unnest(data, separator='.'):
@@ -82,14 +83,14 @@ def dict_unnest(data, separator='.'):
 
     This is the inverse operation of dict_nest().
     """
-    res={}
+    res = {}
     for k, v in data.iteritems():
         if isinstance(v, dict):
-            v=dict_unnest(v, separator)
+            v = dict_unnest(v, separator)
             for k1, v1 in v.iteritems():
-                res["%s%s%s" % (k, separator, k1)]=v1
+                res["%s%s%s" % (k, separator, k1)] = v1
         else:
-            res[k]=v
+            res[k] = v
     return res
 
 class Invalid(Exception):
@@ -99,8 +100,8 @@ class Invalid(Exception):
     def __init__(self,
                  *args,
                  **kw):
-        d={}
-        p=[]
+        d = {}
+        p = []
         for a in args:
             if isinstance(a, dict):
                 self._join_dicts(d, a)
@@ -108,11 +109,11 @@ class Invalid(Exception):
                 p.append(a)
         d.update(self._normalize_dict(kw))
         Exception.__init__(self, p)
-        self.errors=d
+        self.errors = d
         if p:
-            self.message=p[0]
+            self.message = p[0]
         else:
-            self.message=None
+            self.message = None
 
     @staticmethod
     def _join_dicts(res, d):
@@ -125,23 +126,23 @@ class Invalid(Exception):
 
     @staticmethod
     def _normalize_dict(d):
-        res={}
+        res = {}
         if d:
             for k, v in d.iteritems():
                 if not isinstance(v, (list,tuple)):
-                    res[k]=[v]
+                    res[k] = [v]
                 else:
-                    res[k]=v
+                    res[k] = v
         return res
 
     @staticmethod
     def _safe_append(adict, key, thing):
         if not isinstance(thing, (list, dict)):
-            thing=[thing]
+            thing = [thing]
         try:
             adict[key].extend(thing)
         except KeyError:
-            adict[key]=thing
+            adict[key] = thing
 
     def add_error_message(self, key, message):
         _add_error_message(self.errors, key, message)
@@ -150,9 +151,9 @@ class Invalid(Exception):
         if self.errors or force_dict:
             if self.message:
                 # drop the top level message if it is empty
-                result={None: [self.message]}
+                result = {None: [self.message]}
             else:
-                result={}
+                result = {}
         else:
             return self.message
 
@@ -161,7 +162,7 @@ class Invalid(Exception):
                 for m in msglist:
                     if isinstance(m, Exception):
                         try:
-                            unpacked=m.unpack_errors(force_dict=False)
+                            unpacked = m.unpack_errors(force_dict=False)
                         except AttributeError:
                             self._safe_append(result, name, m.args[0])
 
@@ -211,14 +212,14 @@ class Schema(object):
                  allow_missing=True,
                  allow_extra=True,
                  filter_extra=True):
-        self.subvalidators=subvalidators
-        self.msg=msg
-        self.allow_missing=allow_missing
-        self.allow_extra=allow_extra
-        self.filter_extra=filter_extra
+        self.subvalidators = subvalidators
+        self.msg = msg
+        self.allow_missing = allow_missing
+        self.allow_extra = allow_extra
+        self.filter_extra = filter_extra
 
     def _keys(self):
-        schemakeys=set()
+        schemakeys = set()
         for x in self.subvalidators:
             if isinstance(x, (list, tuple)):
                 for x1 in x:
@@ -231,11 +232,11 @@ class Schema(object):
         if not self.filter_extra:
             res = data
         else:
-            res={}
-        exceptions={}
+            res = {}
+        exceptions = {}
         if not (self.allow_extra and self.allow_missing):
-            inputkeys=set(data.keys())
-            schemakeys=self._keys()
+            inputkeys = set(data.keys())
+            schemakeys = self._keys()
             if not self.allow_extra:
                 if inputkeys.difference(schemakeys):
                     raise Invalid(_msg(self.msg,
@@ -248,28 +249,28 @@ class Schema(object):
                                        'missing keys in input'))
 
         for k in sorted(self.subvalidators):
-            vfunc=self.subvalidators[k]
+            vfunc = self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
-                vfunc=compose(*vfunc)
-            have_plural=isinstance(k, (list,tuple))
+                vfunc = compose(*vfunc)
+            have_plural = isinstance(k, (list,tuple))
             if have_plural:
-                vdata=tuple(res.get(x, data.get(x)) for x in k)
+                vdata = tuple(res.get(x, data.get(x)) for x in k)
             else:
-                vdata=res.get(k, data.get(k))
+                vdata = res.get(k, data.get(k))
             try:
-                tmp=vfunc(vdata)
+                tmp = vfunc(vdata)
             except Exception, e:
                 # if the exception specifies a field name,
                 # let that override the key in the validator
                 # dictionary
-                name=getattr(e, 'field', k) or k
+                name = getattr(e, 'field', k) or k
                 exceptions.setdefault(name, [])
                 exceptions[name].append(e)
             else:
                 if have_plural:
                     res.update(dict(zip(k, tmp)))
                 else:
-                    res[k]=tmp
+                    res[k] = tmp
 
         if exceptions:
             raise Invalid(_msg(self.msg,
@@ -286,8 +287,8 @@ def confirm_type(typespec, msg=None):
         raise Invalid(_msg(f.msg,
                            "confirm_type",
                            "unexpected type"))
-    f.typespec=typespec
-    f.msg=msg
+    f.typespec = typespec
+    f.msg = msg
     return f
 
 def translate(mapping, msg=None):
@@ -298,8 +299,8 @@ def translate(mapping, msg=None):
             raise Invalid(_msg(f.msg,
                                "belongs",
                                "invalid choice"))
-    f.mapping=mapping
-    f.msg=msg
+    f.mapping = mapping
+    f.msg = msg
     return f
 
 def to_unicode(encoding='utf8', errors='strict', msg=None):
@@ -313,9 +314,9 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
                 raise Invalid(_msg(f.msg,
                                    'to_unicode',
                                    'decoding error'))
-    f.encoding=encoding
-    f.errors=errors
-    f.msg=msg
+    f.encoding = encoding
+    f.errors = errors
+    f.msg = msg
     return f
 
 def is_scalar(msg=None, listtypes=(list,)):
@@ -328,8 +329,8 @@ def is_scalar(msg=None, listtypes=(list,)):
                                'is_scalar',
                                'expected scalar value'))
         return value
-    f.listtypes=listtypes
-    f.msg=msg
+    f.listtypes = listtypes
+    f.msg = msg
     return f
 
 def is_list(msg=None, listtypes=(list,)):
@@ -342,8 +343,8 @@ def is_list(msg=None, listtypes=(list,)):
                                "is_list",
                                "expected list value"))
         return value
-    f.listtypes=listtypes
-    f.msg=msg
+    f.listtypes = listtypes
+    f.msg = msg
     return f
 
 def to_scalar(listtypes=(list,)):
@@ -357,7 +358,7 @@ def to_scalar(listtypes=(list,)):
         if isinstance(value, f.listtypes):
             return value[0]
         return value
-    f.listtypes=listtypes
+    f.listtypes = listtypes
     return f
 
 def to_list(listtypes=(list,)):
@@ -371,7 +372,7 @@ def to_list(listtypes=(list,)):
         if not isinstance(value, f.listtypes):
             return [value]
         return value
-    f.listtypes=listtypes
+    f.listtypes = listtypes
     return f
 
 def default(defaultValue):
@@ -384,7 +385,7 @@ def default(defaultValue):
         if value is None:
             return f.defaultValue
         return value
-    f.defaultValue=defaultValue
+    f.defaultValue = defaultValue
     return f
 
 def either(*validators):
@@ -393,13 +394,13 @@ def either(*validators):
     exceptions they raise, and returns the result of the first one
     that works.  If none work, the last exception caught is re-raised.
     """
-    last_exception=None
+    last_exception = None
     def f(value):
         for v in validators:
             try:
-                value=v(value)
+                value = v(value)
             except Exception, e:
-                last_exception=e
+                last_exception = e
             else:
                 return value
         raise last_exception
@@ -412,7 +413,7 @@ def compose(*validators):
     """
     def f(value):
         for v in validators:
-            value=v(value)
+            value = v(value)
         return value
     return f
 
@@ -443,20 +444,20 @@ def excursion(*validators):
 
 def equal(val, msg=None):
     def f(value):
-        if value==f.val:
+        if value == f.val:
             return value
         raise Invalid(_msg(f.msg, 'eq', 'invalid value'))
-    f.val=val
-    f.msg=msg
+    f.val = val
+    f.msg = msg
     return f
 
 def not_equal(val, msg=None):
     def f(value):
-        if value!=f.val:
+        if value != f.val:
             return value
         raise Invalid(_msg(f.msg, 'eq', 'invalid value'))
-    f.val=val
-    f.msg=msg
+    f.val = val
+    f.msg = msg
     return f
 
 def empty(msg=None):
@@ -466,17 +467,17 @@ def empty(msg=None):
         raise Invalid(_msg(f.msg,
                            "empty",
                            "No value was expected"))
-    f.msg=msg
+    f.msg = msg
     return f
 
 def not_empty(msg=None):
     def f(value):
-        if value!='' and value != None:
+        if value != '' and value != None:
             return value
         raise Invalid(_msg(f.msg,
                            'notempty',
                            "A non-empty value was expected"))
-    f.msg=msg
+    f.msg = msg
     return f
 
 def strip(value):
@@ -505,9 +506,9 @@ def clamp(min=None, max=None, msg=None):
                                "max",
                                "value above maximum"))
         return value
-    f.min=min
-    f.max=max
-    f.msg=msg
+    f.min = min
+    f.max = max
+    f.msg = msg
     return f
 
 def clamp_length(min=None, max=None, msg=None):
@@ -516,7 +517,7 @@ def clamp_length(min=None, max=None, msg=None):
     of which are optional).
     """
     def f(value):
-        vlen=len(value)
+        vlen = len(value)
         if f.min is not None and vlen<f.min:
                 raise Invalid(_msg(f.msg,
                                    "minlen",
@@ -526,9 +527,9 @@ def clamp_length(min=None, max=None, msg=None):
                                    "maxlen",
                                    "too long"))
         return value
-    f.min=min
-    f.max=max
-    f.msg=msg
+    f.min = min
+    f.max = max
+    f.msg = msg
     return f
 
 def belongs(domain, msg=None):
@@ -542,8 +543,8 @@ def belongs(domain, msg=None):
         raise Invalid(_msg(f.msg,
                            "belongs",
                            "invalid choice"))
-    f.domain=domain
-    f.msg=msg
+    f.domain = domain
+    f.msg = msg
     return f
 
 def not_belongs(domain, msg=None):
@@ -557,8 +558,8 @@ def not_belongs(domain, msg=None):
         raise Invalid(_msg(f.msg,
                            "not_belongs",
                            "invalid choice"))
-    f.domain=domain
-    f.msg=msg
+    f.domain = domain
+    f.msg = msg
     return f
 
 def parse_time(format, msg=None):
@@ -574,8 +575,8 @@ def parse_time(format, msg=None):
             raise Invalid(_msg(f.msg,
                                'parse_time',
                                "invalid time"))
-    f.format=format
-    f.msg=msg
+    f.format = format
+    f.msg = msg
     return f
 
 def parse_date(format, msg=None):
@@ -583,10 +584,10 @@ def parse_date(format, msg=None):
     like parse_time, but returns a datetime.date object.
     """
     def f(value):
-        v=parse_time(f.format, f.msg)(value)
+        v = parse_time(f.format, f.msg)(value)
         return datetime.date(*v[:3])
-    f.format=format
-    f.msg=msg
+    f.format = format
+    f.msg = msg
     return f
 
 def parse_datetime(format, msg=None):
@@ -594,10 +595,10 @@ def parse_datetime(format, msg=None):
     like parse_time, but returns a datetime.datetime object.
     """
     def f(value):
-        v=parse_time(f.format, f.msg)(value)
+        v = parse_time(f.format, f.msg)(value)
         return datetime.datetime(*v[:6])
-    f.format=format
-    f.msg=msg
+    f.format = format
+    f.msg = msg
     return f
 
 def integer(msg=None):
@@ -611,7 +612,7 @@ def integer(msg=None):
             raise Invalid(_msg(f.msg,
                                "integer",
                                "not an integer"))
-    f.msg=msg
+    f.msg = msg
     return f
 
 def regex(pat, msg=None):
@@ -620,14 +621,14 @@ def regex(pat, msg=None):
     and raises Invalid if it doesn't match.
     """
     def f(value):
-        m=re.match(f.pat, value)
+        m = re.match(f.pat, value)
         if not m:
             raise Invalid(_msg(f.msg,
                                'regex',
                                "does not match pattern"))
         return value
-    f.pat=pat
-    f.msg=msg
+    f.pat = pat
+    f.msg = msg
     return f
 
 def regex_sub(pat, sub):
@@ -636,8 +637,8 @@ def regex_sub(pat, sub):
     """
     def f(value):
         return re.sub(f.pat, f.sub, value)
-    f.pat=pat
-    f.sub=sub
+    f.pat = pat
+    f.sub = sub
     return f
 
 def fields_equal(msg=None, field=None):
@@ -646,8 +647,8 @@ def fields_equal(msg=None, field=None):
     verifies that they are all equal.
     """
     def f(values):
-        if len(set(values))!=1:
-            m=_msg(f.msg,
+        if len(set(values)) != 1:
+            m = _msg(f.msg,
                    'fields_equal',
                    "fields not equal")
             if f.field is None:
@@ -655,8 +656,8 @@ def fields_equal(msg=None, field=None):
             else:
                 raise Invalid({f.field: m})
         return values
-    f.msg=msg
-    f.field=field
+    f.msg = msg
+    f.field = field
     return f
 
 def fields_match(name1, name2, msg=None, field=None):
@@ -665,8 +666,8 @@ def fields_match(name1, name2, msg=None, field=None):
     'name2' in value (which must be a dict) are identical.
     """
     def f(value):
-        if value[f.name1]!=value[f.name2]:
-            m=_msg(f.msg,
+        if value[f.name1] != value[f.name2]:
+            m = _msg(f.msg,
                    'fields_match',
                    'fields do not match')
             if f.field is not None:
@@ -674,8 +675,8 @@ def fields_match(name1, name2, msg=None, field=None):
             else:
                 raise Invalid(m)
         return value
-    f.name1=name1
-    f.name2=name2
-    f.msg=msg
-    f.field=field
+    f.name1 = name1
+    f.name2 = name2
+    f.msg = msg
+    f.field = field
     return f
