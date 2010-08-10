@@ -37,7 +37,8 @@ __all__ = [
     'to_list',
     'to_scalar',
     'to_unicode',
-    'translate']
+    'translate',
+    'nested']
 
 
 def _add_error_message(d, k, msg):
@@ -679,4 +680,18 @@ def fields_match(name1, name2, msg=None, field=None):
     f.name2 = name2
     f.msg = msg
     f.field = field
+    return f
+
+def nested(**kwargs):
+    """
+    Behaves like a dict.  It's keys are names, it's values are validators
+    """
+    def f(value):
+        data = dict()
+        for k, v in kwargs.items():
+            try:
+                data[k] = v(value[k])
+            except KeyError:
+                raise Invalid
+        return data
     return f

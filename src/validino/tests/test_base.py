@@ -1,6 +1,58 @@
+import py
+
 import validino as V
 from validino.util import partial
 from util import assert_invalid
+
+
+def test_nested_schema():
+    nested_validators = dict(
+        foo=V.to_unicode(),
+        bar=V.nested(
+            flim=V.to_unicode(),
+            flam=V.to_unicode()))
+    schema = V.Schema(nested_validators)
+    data = dict(
+        foo="Foo",
+        bar=dict(
+            flim="Flim",
+            flam="Flam"))
+    assert schema(data) == data
+
+
+def test_nested():
+    data = dict(
+        flim="Flim",
+        flam="Flam",
+        bubble="Bubble")
+    expected = dict(
+        flim="Flim",
+        flam="Flam")
+    validator = V.nested(
+        flim=V.to_unicode(),
+        flam=V.to_unicode())
+    assert validator(data) == expected
+
+
+def test_nested_missing():
+    data = dict(
+        flim="Flim")
+    validator = V.nested(
+        flim=V.to_unicode(),
+        flam=V.to_unicode())
+    with py.test.raises(V.Invalid):
+        validator(data)
+
+
+def test_nested_with_bad_data():
+    validator = V.nested(
+        flam=V.to_unicode(),
+        flim=V.integer())
+    data = dict(
+        flim="Flim",
+        flam="Flam")
+    with py.test.raises(V.Invalid):
+        validator(data)
 
 
 def test_is_scalar():
