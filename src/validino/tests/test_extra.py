@@ -1,6 +1,7 @@
 import validino as V
 from util import assert_invalid
 
+
 def test_email():
     v=V.email()
     e="jsmullyan@scazzab.com"
@@ -9,6 +10,7 @@ def test_email():
     v=V.email(True, 'snog')
     assert v(e)==e
     assert_invalid(lambda: v('notrealatall@zzzzonononononofgfgfg.dfg'), 'snog')
+
 
 def test_ip():
     v=V.ip('donkey')
@@ -59,6 +61,7 @@ def test_credit_card_2():
         assert set(errors.keys())==set((None, 'cc_type'))
     else:
         assert False, "there should be an error"
+
 
 def test_credit_card_3():
     cc='4000000000998'

@@ -48,7 +48,6 @@ def _add_error_message(d, k, msg):
     if msg not in d[k]:
         d[k].append(msg)
 
-
 def _msg(msg, key, default):
     """
     internal message-handling routine.
@@ -58,7 +57,6 @@ def _msg(msg, key, default):
     if isinstance(msg, basestring):
         return msg
     return msg.get(key, default)
-
 
 def dict_nest(data, separator='.'):
     """
@@ -116,7 +114,6 @@ class Invalid(Exception):
         else:
             self.message=None
 
-
     @staticmethod
     def _join_dicts(res, d):
         for k, v in d.iteritems():
@@ -125,7 +122,6 @@ class Invalid(Exception):
                 res[k].append(v)
             else:
                 res[k].extend(v)
-
 
     @staticmethod
     def _normalize_dict(d):
@@ -147,10 +143,8 @@ class Invalid(Exception):
         except KeyError:
             adict[key]=thing
 
-
     def add_error_message(self, key, message):
         _add_error_message(self.errors, key, message)
-
 
     def unpack_errors(self, force_dict=True):
         if self.errors or force_dict:
@@ -178,7 +172,6 @@ class Invalid(Exception):
                                 self._safe_append(result, name, unpacked)
                     else:
                         self._safe_append(result, name, m)
-
         return result
 
 
@@ -210,8 +203,8 @@ class Schema(object):
     If allow_missing is False, then any missing keys in the input will
     give rise to an error.  Similarly, if allow_extra is False, any
     extra keys will result in an error.
-
     """
+
     def __init__(self,
                  subvalidators,
                  msg=None,
@@ -233,7 +226,6 @@ class Schema(object):
             else:
                 schemakeys.add(x)
         return schemakeys
-
 
     def __call__(self, data):
         if not self.filter_extra:
@@ -325,7 +317,6 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
     f.errors=errors
     f.msg=msg
     return f
-
 
 def is_scalar(msg=None, listtypes=(list,)):
     """
@@ -431,7 +422,6 @@ def check(*validators):
     against input data, which is passed to each validator in turn,
     ignoring the validators return value.  The function returns the
     original input data (which, if it mutable, may have been changed).
-
     """
     def f(value):
         for v in validators:
@@ -571,8 +561,6 @@ def not_belongs(domain, msg=None):
     f.msg=msg
     return f
 
-
-
 def parse_time(format, msg=None):
     """
     attempts to parse the time according to
@@ -594,7 +582,6 @@ def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
     """
-
     def f(value):
         v=parse_time(f.format, f.msg)(value)
         return datetime.date(*v[:3])
@@ -606,7 +593,6 @@ def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
     """
-
     def f(value):
         v=parse_time(f.format, f.msg)(value)
         return datetime.datetime(*v[:6])
@@ -628,12 +614,10 @@ def integer(msg=None):
     f.msg=msg
     return f
 
-
 def regex(pat, msg=None):
     """
     tests the value against the given regex pattern
     and raises Invalid if it doesn't match.
-
     """
     def f(value):
         m=re.match(f.pat, value)

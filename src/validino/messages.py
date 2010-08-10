@@ -1,4 +1,3 @@
-
 from threading import local
 from pkg_resources import resource_stream
 

@@ -46,7 +46,6 @@ def email(check_dns=False, msg=None):
             raise Invalid(_msg(f.msg,
                                'email.domain',
                                'invalid domain'))
-
         if f.check_dns:
             try:
                 a=DNS.DnsRequest(domain, qtype='mx').req().answers
@@ -66,7 +65,6 @@ def email(check_dns=False, msg=None):
     f.msg=msg
     return f
 
-
 def credit_card(types=None,
                 require_type=False,
                 msg=None,
@@ -74,6 +72,7 @@ def credit_card(types=None,
                 cc_type_field='cc_type'):
     if types is None:
         types=_cc.cards
+
     def f(values):
         if isinstance(values, (list, tuple)):
             cardnumber, cc_type=values
@@ -81,7 +80,6 @@ def credit_card(types=None,
             cardnumber, cc_type=values, None
 
         exc=Invalid()
-
         type_ok=not f.require_type
 
         if f.require_type and cc_type is None:
@@ -89,14 +87,11 @@ def credit_card(types=None,
                    "credit_card.require_type",
                    "no credit card type specified")
             exc.add_error_message(f.cc_type_field, m)
-
-
         elif not (cc_type is None) and cc_type not in f.types:
             m=_msg(f.msg,
                    "credit_card.type_check",
                    "unrecognized credit card type")
             exc.add_error_message(f.cc_type_field, m)
-
         else:
             type_ok=True
 
@@ -126,9 +121,7 @@ _ip_pat='^%s$' % r'\.'.join(['|'.join([str(x) for x in range(256)]*4)])
 
 ip=partial(regex, _ip_pat)
 ip.__doc__="""
-
 Returns a validator that tests whether an ip address is properly formed.
-
 """
 
 def url(check_exists=False,
@@ -150,7 +143,6 @@ def url(check_exists=False,
             schema=f.default_schema
         if netloc=='' and f.default_host:
             netloc=f.default_host
-
 
         url=urlparse.urlunparse((schema, netloc, path, params, query, fragment))
         if f.check_exists:

@@ -2,11 +2,13 @@ import validino as V
 from validino.util import partial
 from util import assert_invalid
 
+
 def test_is_scalar():
     msg='sc'
     v=V.is_scalar(msg=msg)
     assert v(40)==40
     assert_invalid(lambda: v([12]), msg)
+
 
 def test_is_list():
     msg="list"
@@ -14,11 +16,13 @@ def test_is_list():
     assert v([40])==[40]
     assert_invalid(lambda: v(40), msg)
 
+
 def test_to_scalar():
     v=V.to_scalar()
     assert v([40])==40
     assert v(40)==40
     assert v(range(40))==0
+
 
 def test_to_list():
     v=V.to_list()
@@ -65,6 +69,7 @@ def test_compose():
     assert_invalid(lambda: v('96'), messages['max'])
     assert_invalid(lambda: v('8'), messages['min'])
 
+
 def test_check():
     d=dict(x=5, y=100)
     def add_z(val):
@@ -76,9 +81,11 @@ def test_check():
     assert d2 is d
     assert d['z']==300
 
+
 def test_default():
     v=V.default("pong")
     assert v(None)=='pong'
+
 
 def test_dict_nest():
     d={'robots.bob.size' : 34,
@@ -99,6 +106,7 @@ def test_dict_nest():
     d2=V.dict_unnest(d1)
     assert d==d2
 
+
 def test_either():
     msg="please enter an integer"
     v=V.either(V.empty(), V.integer(msg=msg))
@@ -113,21 +121,25 @@ def test_empty():
     assert v(None)==None
     assert_invalid(lambda: v("bob"), 'scorch me')
 
+
 def test_equal():
     v=V.equal('egg', msg="not equal")
     assert v('egg')=='egg'
     assert_invalid(lambda: v('bob'), 'not equal')
+
 
 def test_not_equal():
     v=V.not_equal('egg', msg='equal')
     assert v('plop')=='plop'
     assert_invalid(lambda: v('egg'), 'equal')
 
+
 def test_integer():
     msg="please enter an integer"
     v=V.integer(msg=msg)
     assert v('40')==40
     assert_invalid(lambda: v('whack him until he screams'), msg)
+
 
 def test_not_empty():
     msg="hammer my xylophone"
@@ -136,17 +148,20 @@ def test_not_empty():
     assert_invalid(lambda: v(''), msg)
     assert_invalid(lambda: v(None), msg)
 
+
 def test_belongs():
     msg="rinse me a robot"
     v=V.belongs('pinko widget frog lump'.split(), msg=msg)
     assert v('pinko')=='pinko'
     assert_invalid(lambda: v('snot'), msg)
 
+
 def test_not_belongs():
     msg="belittle my humbug"
     v=V.not_belongs(range(5), msg=msg)
     assert v('pinko')=='pinko'
     assert_invalid(lambda: v(4), msg=msg)
+
 
 def test_parse_date():
     fmt='%m %d %Y'
@@ -156,6 +171,7 @@ def test_parse_date():
     assert dt.year==2007
     assert dt.month==7
     assert dt.day==2
+
 
 def test_parse_datetime():
     fmt='%m %d %Y %H:%M'
@@ -180,6 +196,7 @@ def test_regex():
     v=V.regex('shrubbery\d{3}$', 'regex')
     assert v('shrubbery222')=='shrubbery222'
     assert_invalid(lambda: v('buy a shrubbery333, ok?'), 'regex')
+
 
 def test_regex_sub():
     v=V.regex_sub('shrubbery', 'potted plant')
@@ -214,6 +231,7 @@ def test_schema_1():
     assert data['username']==newdata['username']
     assert int(data['user_id'])==newdata['user_id']
     assert data['department']==newdata['department']
+
 
 def test_schema_2():
     s=V.Schema(
@@ -261,6 +279,7 @@ def test_schema_3():
     d4=dict(x=10, y=10, text='ho', pingpong='lather')
     assert_invalid(lambda: v(d4), 'extra')
 
+
 def test_filter_missing():
     s = V.Schema(
         dict(
@@ -272,11 +291,10 @@ def test_filter_missing():
     expected = dict(x=1, y=2, foo="bar")
     assert s(d1) == expected
 
+
 def test_strip():
     assert V.strip('   foo   ')=='foo'
     assert V.strip(None)==None
-
-
 
 
 def test_fields_match():
@@ -288,12 +306,14 @@ def test_fields_match():
     v=V.fields_match('foo', 'poo', 'oink')
     assert_invalid(lambda: v(d), 'oink')
 
+
 def test_fields_equal():
     values=("pong", "pong")
     v=V.fields_equal('hog')
     assert values==v(values)
     values=('tim', 'worthy')
     assert_invalid(lambda: v(values), 'hog')
+
 
 def test_excursion():
     x='gadzooks@wonko.com'
@@ -316,6 +336,7 @@ def test_translate():
     assert v('y')==True
     assert_invalid(lambda: v('pod'), 'dong')
 
+
 def test_to_unicode():
     v=V.to_unicode(msg='cats')
     assert v(u"brisbane")==u"brisbane"
@@ -329,9 +350,9 @@ def test_map():
     v=lambda value: map(V.clamp_length(max=4), value)
     assert v(data)==data
 
-def test_unpack_1():
 
-    e=V.Invalid({'ding' : [V.Invalid('pod')],
+def test_unpack_1():
+    e = V.Invalid({'ding' : [V.Invalid('pod')],
                  'dong' : [V.Invalid('piddle')]})
     res=e.unpack_errors()
     print res
@@ -356,6 +377,7 @@ def test_unpack_2():
     r3=e3.unpack_errors()
     print r3
     assert r1==r3
+
 
 def test_unpack_3():
     errors=dict(frog="My peachy frog hurts",
@@ -383,6 +405,4 @@ def test_unpack_3():
         if k=='frog':
             assert len(v)==2
         else:
-            assert len(v)==1
-
-
+            assert len(v) == 1

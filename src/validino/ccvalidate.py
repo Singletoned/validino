@@ -118,6 +118,7 @@ class UnknownCreditCardPrefixException(CreditCardValidationException):
 class CreditCardFormatException(CreditCardValidationException):
     pass
 
+
 def check_credit_card(ccnum, cctype=None):
     """
     checks the cc number for improper characters, matches against the
