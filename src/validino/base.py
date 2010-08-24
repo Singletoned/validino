@@ -1,7 +1,7 @@
 import datetime
 import re
 import time
-from uuid import UUID
+from uuid import UUID, uuid1
 
 
 __all__ = [
@@ -619,9 +619,12 @@ def uuid(msg=None, default=False):
         try:
             v = str(UUID(str(value)))
         except ValueError:
-            raise Invalid(_msg(f.msg,
-                               "uuid",
-                               "invalid uuid"))
+            if default and not value:
+                return uuid1()
+            else:
+                raise Invalid(_msg(f.msg,
+                                   "uuid",
+                                   "invalid uuid"))
         return v
     f.msg = msg
     return f

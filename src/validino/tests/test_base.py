@@ -198,6 +198,13 @@ def test_uuid():
     with py.test.raises(V.Invalid) as e:
         assert v('hullo')
 
+    v = V.uuid(msg=msg, default=True)
+    assert v(None)
+    assert v(False)
+    assert v([])
+    with py.test.raises(V.Invalid) as e:
+        assert v('hullo')
+
 
 def test_either():
     msg = "please enter an integer"
