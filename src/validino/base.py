@@ -320,7 +320,7 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
         else:
             try:
                 return value.decode(f.encoding, f.errors)
-            except UnicodeError, e:
+            except (UnicodeError, AttributeError), e:
                 raise Invalid(_msg(f.msg,
                                    'to_unicode',
                                    'decoding error'))

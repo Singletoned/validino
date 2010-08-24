@@ -442,7 +442,9 @@ def test_to_unicode():
     u = u"\N{GREEK CAPITAL LETTER OMEGA} my gawd"
     s = u.encode('utf-8')
     assert v(s) == u
-
+    with py.test.raises(V.Invalid) as e:
+        v(None)
+        assert e.unpack_errors() == "cats"
 
 def test_map():
     data = ['pig', 'frog', 'lump']
