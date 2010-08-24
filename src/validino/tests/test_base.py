@@ -1,3 +1,5 @@
+import uuid
+
 import py
 
 import validino as V
@@ -183,6 +185,18 @@ def test_dict_nest():
     assert d1['frogs']['oswald'] == {'size' : 'medium'}
     d2 = V.dict_unnest(d1)
     assert d == d2
+
+
+def test_uuid():
+    msg = "Please enter a uuid"
+    v = V.uuid(msg=msg)
+    guid = uuid.uuid5(uuid.NAMESPACE_DNS, "a test id")
+    assert v(guid) == str(guid)
+    assert v(str(guid)) == str(guid)
+    with py.test.raises(V.Invalid) as e:
+        assert v(None)
+    with py.test.raises(V.Invalid) as e:
+        assert v('hullo')
 
 
 def test_either():

@@ -1,6 +1,7 @@
 import datetime
 import re
 import time
+from uuid import UUID
 
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     'is_list',
     'is_scalar',
     'not_equal',
+    'uuid',
     'integer',
     'boolean',
     'to_boolean',
@@ -606,6 +608,21 @@ def parse_datetime(format, msg=None):
         v = parse_time(f.format, f.msg)(value)
         return datetime.datetime(*v[:6])
     f.format = format
+    f.msg = msg
+    return f
+
+def uuid(msg=None, default=False):
+    """
+    Accepts any value that can be converted to a uuid
+    """
+    def f(value):
+        try:
+            v = str(UUID(str(value)))
+        except ValueError:
+            raise Invalid(_msg(f.msg,
+                               "uuid",
+                               "invalid uuid"))
+        return v
     f.msg = msg
     return f
 
