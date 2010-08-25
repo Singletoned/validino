@@ -25,7 +25,6 @@ __all__ = [
     'not_equal',
     'uuid',
     'integer',
-    'boolean',
     'to_boolean',
     'not_empty',
     'not_belongs',
@@ -304,10 +303,12 @@ def translate(mapping, msg=None):
             raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
-def to_unicode(encoding='utf8', errors='strict', msg=None):
+def to_unicode(encoding='utf8', errors='strict', coerce=True, msg=None):
     def f(value):
         if isinstance(value, unicode):
             return value
+        elif not coerce:
+            raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
         elif value is None:
             return u''
         else:
@@ -319,10 +320,12 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
                 raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
     return f
 
-def to_string(encoding='utf8', errors='strict', msg=None):
+def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
     def f(value):
         if isinstance(value, str):
             return value
+        elif not coerce:
+            raise Invalid(_msg(msg, 'to_string', 'encoding error'))
         elif value is None:
             return ''
         else:
@@ -591,26 +594,7 @@ def integer(msg=None):
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
-def boolean(msg=None):
-    """
-    Ensures the value is one of True or False
-
-    >>> validator = boolean(msg='Is not boolean')
-    >>> validator(True)
-    True
-    >>> validator('true')
-    Traceback (most recent call last):
-    ...
-    Invalid: ['Is not boolean']
-    """
-    def f(value):
-        if value in [True, False]:
-            return value
-        else:
-            raise Invalid(_msg(msg, 'boolean', 'not a boolean'))
-    return f
-
-def to_boolean(msg=None):
+def to_boolean(coerce=True, msg=None):
     """
     Coerces the value to one of True or False
 
@@ -621,9 +605,19 @@ def to_boolean(msg=None):
     False
     >>> validator([])
     False
+    >>> validator = to_boolean(msg='Me no convert to boolean', coerce=False)
+    >>> validator('true')
+    Traceback (most recent call last):
+    ...
+    Invalid: ['Is not boolean']
     """
     def f(value):
-        return bool(value)
+        if value in [True, False]:
+            return value
+        elif coerce:
+            return bool(value)
+        else:
+            raise Invalid(_msg(msg, 'to_boolean', 'not a boolean'))
     return f
 
 def regex(pat, msg=None):

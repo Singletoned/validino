@@ -80,16 +80,6 @@ def test_only_one_of():
         "field1": "Please only choose one value"}
 
 
-def test_boolean():
-    validator = V.boolean("Is not boolean")
-    assert validator(True) == True
-    assert validator(False) == False
-    with py.test.raises(V.Invalid) as e:
-        validator("True")
-    errors = e.value.unpack_errors()
-    assert errors == {None:"Is not boolean"}
-
-
 def test_to_boolean():
     validator = V.to_boolean()
     def do_test(v, t_or_f):
@@ -100,6 +90,16 @@ def test_to_boolean():
         yield do_test, v, True
     for v in false_values:
         yield do_test, v, False
+
+
+def test_to_boolean_without_coerce():
+    validator = V.to_boolean(coerce=False, msg="Is not boolean")
+    assert validator(True) == True
+    assert validator(False) == False
+    with py.test.raises(V.Invalid) as e:
+        validator("True")
+    errors = e.value.unpack_errors()
+    assert errors == {None:"Is not boolean"}
 
 
 def test_is_scalar():
@@ -459,9 +459,10 @@ def test_translate():
     assert_invalid(lambda: v('pod'), 'dong')
 
 
-def test_to_unicode():
+def test_unicode():
     v = V.to_unicode(msg='cats')
     assert v(u"brisbane") == u"brisbane"
+    assert v(1) == u"1"
     for t in [
         u'parrots', 'parrots', 1, object(), None,
         ]:
@@ -474,9 +475,21 @@ def test_to_unicode():
         v(s)
         assert e.unpack_errors() == "cats"
 
+
+def test_unicode_without_coerce():
+    v = V.to_unicode(msg='cats', coerce=False)
+    assert v(u"brisbane") == u"brisbane"
+    with py.test.raises(V.Invalid) as e:
+        v('brisbane')
+        assert e.unpack_errors() == "cats"
+    with py.test.raises(V.Invalid) as e:
+        v(1)
+        assert e.unpack_errors() == "cats"
+
+
 def test_to_string():
     v = V.to_string(msg="cats")
-    assert v(u'parrots') == 'parrots'
+    assert v('parrots') == 'parrots'
     for t in [
         u'parrots', 'parrots', 1, object(), None,
         ]:
@@ -488,6 +501,18 @@ def test_to_string():
         v = V.to_string(encoding='ascii', msg='cats')
         v(u)
         assert e.unpack_errors() == "cats"
+
+
+def test_string_without_coerce():
+    v = V.to_string(msg='cats', coerce=False)
+    assert v("brisbane") == "brisbane"
+    with py.test.raises(V.Invalid) as e:
+        v(u'brisbane')
+        assert e.unpack_errors() == "cats"
+    with py.test.raises(V.Invalid) as e:
+        v(1)
+        assert e.unpack_errors() == "cats"
+
 
 def test_map():
     data = ['pig', 'frog', 'lump']
