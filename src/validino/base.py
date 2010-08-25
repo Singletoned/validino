@@ -251,14 +251,12 @@ class Schema(object):
             schemakeys = self._keys()
             if not self.allow_extra:
                 if inputkeys.difference(schemakeys):
-                    raise Invalid(_msg(self.msg,
-                                       'schema.extra',
-                                       'extra keys in input'))
+                    m = _msg(self.msg, 'schema.extra', 'extra keys in input')
+                    raise Invalid(m)
             if not self.allow_missing:
                 if schemakeys.difference(inputkeys):
-                    raise Invalid(_msg(self.msg,
-                                       'schema.missing',
-                                       'missing keys in input'))
+                    m = _msg(self.msg, 'schema.missing', 'missing keys in input')
+                    raise Invalid(m)
 
         for k in sorted(self.subvalidators):
             vfunc = self.subvalidators[k]
@@ -285,10 +283,9 @@ class Schema(object):
                     res[k] = tmp
 
         if exceptions:
-            raise Invalid(_msg(self.msg,
-                               "schema.error",
-                               "Problems were found in the submitted data."),
-                          exceptions)
+            m = _msg(self.msg, "schema.error",
+                     "Problems were found in the submitted data.")
+            raise Invalid(m, exceptions)
         return res
 
 
@@ -296,9 +293,7 @@ def confirm_type(typespec, msg=None):
     def f(value):
         if isinstance(value, typespec):
             return value
-        raise Invalid(_msg(msg,
-                           "confirm_type",
-                           "unexpected type"))
+        raise Invalid(_msg(msg, "confirm_type", "unexpected type"))
     return f
 
 def translate(mapping, msg=None):
@@ -306,9 +301,7 @@ def translate(mapping, msg=None):
         try:
             return mapping[value]
         except KeyError:
-            raise Invalid(_msg(msg,
-                               "belongs",
-                               "invalid choice"))
+            raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
 def to_unicode(encoding='utf8', errors='strict', msg=None):
@@ -323,9 +316,7 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
             except AttributeError:
                 return unicode(value)
             except UnicodeError, e:
-                raise Invalid(_msg(msg,
-                                   'to_unicode',
-                                   'encoding error'))
+                raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
     return f
 
 def to_string(encoding='utf8', errors='strict', msg=None):
@@ -340,9 +331,7 @@ def to_string(encoding='utf8', errors='strict', msg=None):
             except AttributeError:
                 return str(value)
             except UnicodeError, e:
-                raise Invalid(_msg(msg,
-                                   'to_string',
-                                   'encoding error'))
+                raise Invalid(_msg(msg, 'to_string', 'encoding error'))
     return f
 
 def is_scalar(msg=None, listtypes=(list,)):
@@ -351,9 +340,7 @@ def is_scalar(msg=None, listtypes=(list,)):
     """
     def f(value):
         if isinstance(value, listtypes):
-            raise Invalid(_msg(msg,
-                               'is_scalar',
-                               'expected scalar value'))
+            raise Invalid(_msg(msg, 'is_scalar', 'expected scalar value'))
         return value
     return f
 
@@ -363,9 +350,7 @@ def is_list(msg=None, listtypes=(list,)):
     """
     def f(value):
         if not isinstance(value, listtypes):
-            raise Invalid(_msg(msg,
-                               "is_list",
-                               "expected list value"))
+            raise Invalid(_msg(msg, "is_list", "expected list value"))
         return value
     return f
 
@@ -479,18 +464,14 @@ def empty(msg=None):
     def f(value):
         if value == '' or value is None:
             return value
-        raise Invalid(_msg(msg,
-                           "empty",
-                           "No value was expected"))
+        raise Invalid(_msg(msg, "empty", "No value was expected"))
     return f
 
 def not_empty(msg=None):
     def f(value):
         if value != '' and value != None:
             return value
-        raise Invalid(_msg(msg,
-                           'notempty',
-                           "A non-empty value was expected"))
+        raise Invalid(_msg(msg, 'notempty', "A non-empty value was expected"))
     return f
 
 def strip(value):
@@ -511,13 +492,9 @@ def clamp(min=None, max=None, msg=None):
     """
     def f(value):
         if min is not None and value < min:
-            raise Invalid(_msg(msg,
-                               "min",
-                               "value below minimum"))
+            raise Invalid(_msg(msg, "min", "value below minimum"))
         if max is not None and value > max:
-            raise Invalid(_msg(msg,
-                               "max",
-                               "value above maximum"))
+            raise Invalid(_msg(msg, "max", "value above maximum"))
         return value
     return f
 
@@ -529,13 +506,9 @@ def clamp_length(min=None, max=None, msg=None):
     def f(value):
         vlen = len(value)
         if min is not None and vlen < min:
-            raise Invalid(_msg(msg,
-                               "minlen",
-                               "too short"))
+            raise Invalid(_msg(msg, "minlen", "too short"))
         if max is not None and vlen > max:
-            raise Invalid(_msg(msg,
-                               "maxlen",
-                               "too long"))
+            raise Invalid(_msg(msg, "maxlen", "too long"))
         return value
     return f
 
@@ -547,9 +520,7 @@ def belongs(domain, msg=None):
     def f(value):
         if value in domain:
             return value
-        raise Invalid(_msg(msg,
-                           "belongs",
-                           "invalid choice"))
+        raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
 def not_belongs(domain, msg=None):
@@ -560,9 +531,7 @@ def not_belongs(domain, msg=None):
     def f(value):
         if value not in domain:
             return value
-        raise Invalid(_msg(msg,
-                           "not_belongs",
-                           "invalid choice"))
+        raise Invalid(_msg(msg, "not_belongs", "invalid choice"))
     return f
 
 def parse_time(format, msg=None):
@@ -575,9 +544,7 @@ def parse_time(format, msg=None):
         try:
             return time.strptime(value, format)
         except ValueError:
-            raise Invalid(_msg(msg,
-                               'parse_time',
-                               "invalid time"))
+            raise Invalid(_msg(msg, 'parse_time', "invalid time"))
     return f
 
 def parse_date(format, msg=None):
@@ -609,9 +576,7 @@ def uuid(msg=None, default=False):
             if default and not value:
                 return uuid1()
             else:
-                raise Invalid(_msg(msg,
-                                   "uuid",
-                                   "invalid uuid"))
+                raise Invalid(_msg(msg, "uuid", "invalid uuid"))
         return v
     return f
 
@@ -623,9 +588,7 @@ def integer(msg=None):
         try:
             return int(value)
         except (TypeError, ValueError):
-            raise Invalid(_msg(msg,
-                               "integer",
-                               "not an integer"))
+            raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
 def boolean(msg=None):
@@ -671,9 +634,7 @@ def regex(pat, msg=None):
     def f(value):
         m = re.match(pat, value)
         if not m:
-            raise Invalid(_msg(msg,
-                               'regex',
-                               "does not match pattern"))
+            raise Invalid(_msg(msg, 'regex', "does not match pattern"))
         return value
     return f
 
@@ -692,9 +653,7 @@ def fields_equal(msg=None, field=None):
     """
     def f(values):
         if len(set(values)) != 1:
-            m = _msg(msg,
-                   'fields_equal',
-                   "fields not equal")
+            m = _msg(msg, 'fields_equal', "fields not equal")
             if field is None:
                 raise Invalid(m)
             else:
@@ -709,9 +668,7 @@ def fields_match(name1, name2, msg=None, field=None):
     """
     def f(value):
         if value[name1] != value[name2]:
-            m = _msg(msg,
-                   'fields_match',
-                   'fields do not match')
+            m = _msg(msg, 'fields_match', 'fields do not match')
             if field is not None:
                 raise Invalid({field: m})
             else:
@@ -739,9 +696,7 @@ def only_one_of(msg=None, field=None):
     """
     def f(values):
         if sum([int(bool(val)) for val in values]) > 1:
-            m = _msg(msg,
-                     'only_one_of',
-                     'more than one value present')
+            m = _msg(msg, 'only_one_of', 'more than one value present')
             if field is not None:
                 raise Invalid({field: m})
             else:
