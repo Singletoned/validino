@@ -57,6 +57,29 @@ def test_nested_with_bad_data():
         validator(data)
 
 
+def test_only_one_of():
+    v = V.only_one_of(msg="Please only choose one value")
+    assert v((0, 1)) == (0, 1)
+    assert v((1, False, None, [])) == (1, False, None, [])
+    with py.test.raises(V.Invalid) as e:
+        v((1, False, None, True))
+    assert e.value.unpack_errors() == {None: "Please only choose one value"}
+    schema = V.Schema({
+        'field1': (V.integer()),
+        'field2': (V.integer()),
+        ('field1', 'field2'): (
+            V.only_one_of(
+                msg="Please only choose one value",
+                field='field1'))})
+    assert schema(dict(field1="0", field2="1")) == dict(field1=0, field2=1)
+    with py.test.raises(V.Invalid) as e:
+        schema(dict(field1=True, field2=1))
+    errors = e.value.unpack_errors()
+    assert errors == {
+        None: "Problems were found in the submitted data.",
+        "field1": "Please only choose one value"}
+
+
 def test_boolean():
     validator = V.boolean("Is not boolean")
     assert validator(True) == True

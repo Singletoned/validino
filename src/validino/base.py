@@ -42,7 +42,8 @@ __all__ = [
     'to_unicode',
     'to_string',
     'translate',
-    'nested']
+    'nested',
+    'only_one_of']
 
 
 def _add_error_message(d, k, msg):
@@ -730,4 +731,20 @@ def nested(**kwargs):
             except KeyError:
                 raise Invalid
         return data
+    return f
+
+def only_one_of(msg=None, field=None):
+    """
+    Check that only one of the given values is True.
+    """
+    def f(values):
+        if sum([int(bool(val)) for val in values]) > 1:
+            m = _msg(msg,
+                     'only_one_of',
+                     'more than one value present')
+            if field is not None:
+                raise Invalid({field: m})
+            else:
+                raise Invalid(m)
+        return values
     return f
