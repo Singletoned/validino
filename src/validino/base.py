@@ -40,6 +40,7 @@ __all__ = [
     'to_list',
     'to_scalar',
     'to_unicode',
+    'to_string',
     'translate',
     'nested']
 
@@ -313,16 +314,34 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
     def f(value):
         if isinstance(value, unicode):
             return value
+        elif value is None:
+            return u''
         else:
             try:
-                return value.decode(f.encoding, f.errors)
-            except (UnicodeError, AttributeError), e:
-                raise Invalid(_msg(f.msg,
+                return value.decode(encoding, errors)
+            except AttributeError:
+                return unicode(value)
+            except UnicodeError, e:
+                raise Invalid(_msg(msg,
                                    'to_unicode',
-                                   'decoding error'))
-    f.encoding = encoding
-    f.errors = errors
-    f.msg = msg
+                                   'encoding error'))
+    return f
+
+def to_string(encoding='utf8', errors='strict', msg=None):
+    def f(value):
+        if isinstance(value, str):
+            return value
+        elif value is None:
+            return ''
+        else:
+            try:
+                return value.encode(encoding, errors)
+            except AttributeError:
+                return str(value)
+            except UnicodeError, e:
+                raise Invalid(_msg(msg,
+                                   'to_string',
+                                   'encoding error'))
     return f
 
 def is_scalar(msg=None, listtypes=(list,)):

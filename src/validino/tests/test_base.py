@@ -439,11 +439,31 @@ def test_translate():
 def test_to_unicode():
     v = V.to_unicode(msg='cats')
     assert v(u"brisbane") == u"brisbane"
+    for t in [
+        u'parrots', 'parrots', 1, object(), None,
+        ]:
+        assert isinstance(v(t), unicode)
     u = u"\N{GREEK CAPITAL LETTER OMEGA} my gawd"
     s = u.encode('utf-8')
     assert v(s) == u
     with py.test.raises(V.Invalid) as e:
-        v(None)
+        v = V.to_unicode(encoding='ascii', msg='cats')
+        v(s)
+        assert e.unpack_errors() == "cats"
+
+def test_to_string():
+    v = V.to_string(msg="cats")
+    assert v(u'parrots') == 'parrots'
+    for t in [
+        u'parrots', 'parrots', 1, object(), None,
+        ]:
+        assert isinstance(v(t), str)
+    u = u"\N{GREEK CAPITAL LETTER OMEGA} my gawd"
+    s = u.encode('utf-8')
+    assert v(u) == s
+    with py.test.raises(V.Invalid) as e:
+        v = V.to_string(encoding='ascii', msg='cats')
+        v(u)
         assert e.unpack_errors() == "cats"
 
 def test_map():
