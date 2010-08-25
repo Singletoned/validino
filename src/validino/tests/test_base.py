@@ -527,3 +527,21 @@ def test_unpack_3():
         #     assert len(v) == 2
         # else:
         #     assert len(v) == 1
+
+def test_errors():
+    schema = V.Schema(
+        dict(
+            foo=(
+                V.to_unicode(msg="foo can't be converted"),
+                V.not_empty(msg="foo is empty")),
+            bar=(
+                V.integer(msg="bar isn't an integer"),
+                V.not_empty(msg="bar is empty"))),
+        msg="Check the errors and try again.  Moron.")
+
+    with py.test.raises(V.Invalid) as e:
+        data = schema(dict(foo=None, bar=None))
+        expected = [
+            "foo can't be converted",
+            "bar isn't an integer"]
+        assert e.unpack_errors() == expected
