@@ -38,7 +38,9 @@ __all__ = [
     'strip',
     'to_list',
     'to_scalar',
+    'is_unicode',
     'to_unicode',
+    'is_string',
     'to_string',
     'translate',
     'nested',
@@ -303,12 +305,18 @@ def translate(mapping, msg=None):
             raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
-def to_unicode(encoding='utf8', errors='strict', coerce=True, msg=None):
+def is_unicode(msg=None):
     def f(value):
         if isinstance(value, unicode):
             return value
-        elif not coerce:
-            raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
+        else:
+            raise Invalid(_msg(msg, 'is_unicode', 'not unicode'))
+    return f
+
+def to_unicode(encoding='utf8', errors='strict', msg=None):
+    def f(value):
+        if isinstance(value, unicode):
+            return value
         elif value is None:
             return u''
         else:
@@ -319,6 +327,16 @@ def to_unicode(encoding='utf8', errors='strict', coerce=True, msg=None):
             except UnicodeError, e:
                 raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
     return f
+
+
+def is_string(msg=None):
+    def f(value):
+        if isinstance(value, str):
+            return value
+        else:
+            raise Invalid(_msg(msg, 'is_string', 'not string'))
+    return f
+
 
 def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
     def f(value):

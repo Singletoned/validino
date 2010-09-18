@@ -459,7 +459,7 @@ def test_translate():
     assert_invalid(lambda: v('pod'), 'dong')
 
 
-def test_unicode():
+def test_to_unicode():
     v = V.to_unicode(msg='cats')
     assert v(u"brisbane") == u"brisbane"
     assert v(1) == u"1"
@@ -476,15 +476,16 @@ def test_unicode():
         assert e.unpack_errors() == "cats"
 
 
-def test_unicode_without_coerce():
-    v = V.to_unicode(msg='cats', coerce=False)
-    assert v(u"brisbane") == u"brisbane"
+def test_is_unicode():
+    v = V.is_unicode(msg="This is not unicode")
+    assert v(u"parrot") == u"parrot"
+    assert isinstance(v(u"parrot"), unicode)
     with py.test.raises(V.Invalid) as e:
-        v('brisbane')
-        assert e.unpack_errors() == "cats"
+        v("parrot")
+        assert e.unpack_errors() == "This is not unicode"
     with py.test.raises(V.Invalid) as e:
         v(1)
-        assert e.unpack_errors() == "cats"
+        assert e.unpack_errors() == "This is not unicode"
 
 
 def test_to_string():
@@ -503,15 +504,16 @@ def test_to_string():
         assert e.unpack_errors() == "cats"
 
 
-def test_string_without_coerce():
-    v = V.to_string(msg='cats', coerce=False)
-    assert v("brisbane") == "brisbane"
+def test_is_string():
+    v = V.is_string(msg="This is not a string")
+    assert v("parrot") == "parrot"
+    assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
-        v(u'brisbane')
-        assert e.unpack_errors() == "cats"
+        v(u"parrot")
+        assert e.unpack_errors() == "This is not a string"
     with py.test.raises(V.Invalid) as e:
         v(1)
-        assert e.unpack_errors() == "cats"
+        assert e.unpack_errors() == "This is not a string"
 
 
 def test_map():
