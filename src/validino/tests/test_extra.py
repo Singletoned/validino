@@ -87,6 +87,7 @@ def test_credit_card_3():
         assert False, "there should be an error"
 
 
+@py.test.skip
 def test_url():
     v = V.url()
     u = 'http://www.wnyc.org/'

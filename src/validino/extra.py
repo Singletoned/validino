@@ -20,7 +20,10 @@ try:
 except ImportError:
     DNS = None
 else:
-    DNS.DiscoverNameServers()
+    try:
+        DNS.DiscoverNameServers()
+    except IOError:
+        DNS = None
 
 __all__ = [
     'email',
