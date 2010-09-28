@@ -14,6 +14,7 @@ __all__ = [
     'default',
     'dict_nest',
     'dict_unnest',
+    'all_of',
     'either',
     'empty',
     'equal',
@@ -410,6 +411,18 @@ def default(defaultValue):
     def f(value):
         if value is None:
             return defaultValue
+        return value
+    return f
+
+def all_of(*validators):
+    """
+    Tries each of a series of validators in turn, swallowing any
+    exceptions they raise, and returns the result of the first one
+    that works.  If none work, the last exception caught is re-raised.
+    """
+    def f(value):
+        for v in validators:
+            value = v(value)
         return value
     return f
 
