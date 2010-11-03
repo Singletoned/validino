@@ -218,8 +218,10 @@ def test_uuid():
     assert v(str(guid)) == str(guid)
     with py.test.raises(V.Invalid) as e:
         assert v(None)
+        assert e.unpack_errors() == "Please enter a uuid"
     with py.test.raises(V.Invalid) as e:
         assert v('hullo')
+        assert e.unpack_errors() == "Please enter a uuid"
 
     v = V.uuid(msg=msg, default=True)
     assert v(None)
