@@ -243,6 +243,14 @@ def test_uuid():
         assert v('hullo')
 
 
+def test_all_of():
+    v = V.all_of(V.to_string('foo'), V.not_empty('bar'))
+    assert v('bob') == 'bob'
+    with py.test.raises(V.Invalid) as e:
+        assert v('')
+        assert e.unpack_errors() == "bar"
+
+
 def test_either():
     msg = "please enter an integer"
     v = V.either(V.empty(), V.integer(msg=msg))
