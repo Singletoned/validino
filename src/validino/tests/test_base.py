@@ -201,7 +201,19 @@ def test_dict_nest():
         'frogs.humphrey.size' : 'large',
         'x' : 33,
         'y' : 22}
+    expected = dict(
+        robots=dict(
+            bob=dict(size=34, color='blue'),
+            sally=dict(size=12, color='green'),
+            names=['sally', 'bob']),
+        frogs=dict(
+            names=['oswald', 'humphrey'],
+            oswald=dict(size='medium'),
+            humphrey=dict(size='large')),
+        x=33,
+        y=22)
     d1 = V.dict_nest(d)
+    assert d1 == expected
     assert d1['robots']['names'] == ['sally', 'bob']
     assert d1['x'] == 33
     assert d1['y'] == 22
