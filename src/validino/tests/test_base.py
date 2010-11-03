@@ -457,6 +457,12 @@ def test_fields_equal():
     assert values == v(values)
     values = ('tim', 'worthy')
     assert_invalid(lambda: v(values), 'hog')
+    s = V.Schema({
+        'foo': V.integer(),
+        ('foo', 'bar'): V.fields_equal(u"foo and bar don't match")})
+    d = dict(foo='1', bar=1)
+    expected = dict(foo=1, bar=1)
+    assert s(d) == expected
 
 
 def test_excursion():
