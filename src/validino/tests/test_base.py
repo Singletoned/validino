@@ -583,11 +583,9 @@ def test_unpack_1():
     e = V.Invalid({'ding' : [V.Invalid('pod')],
                  'dong' : [V.Invalid('piddle')]})
     res = e.unpack_errors()
-    print res
     assert res == {'ding' : 'pod', 'dong' : 'piddle'}
     e2 = V.Invalid({'' : [e]})
     res2 = e.unpack_errors()
-    print res2
     assert res == res2
 
 
@@ -598,12 +596,8 @@ def test_unpack_2():
     e2 = V.Invalid({'' : [e]})
     e3 = V.Invalid({'' : [e2]})
     r1 = e.unpack_errors()
-    print
-    print r1
     r2 = e2.unpack_errors()
-    print r2
     r3 = e3.unpack_errors()
-    print r3
     assert r1 == r3
 
 
@@ -614,7 +608,6 @@ def test_unpack_3():
     e = V.Invalid(**errors)
 
     u = e.unpack_errors()
-    print u
     assert set(u) == set(('frog', 'dog', 'insect'))
     for v in u.itervalues():
         assert isinstance(v, basestring)
