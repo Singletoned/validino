@@ -230,10 +230,10 @@ def test_uuid():
     assert v(str(guid)) == str(guid)
     with py.test.raises(V.Invalid) as e:
         assert v(None)
-        assert e.unpack_errors() == "Please enter a uuid"
+    assert e.value.unpack_errors() == {None: "Please enter a uuid"}
     with py.test.raises(V.Invalid) as e:
         assert v('hullo')
-        assert e.unpack_errors() == "Please enter a uuid"
+    assert e.value.unpack_errors() == {None: "Please enter a uuid"}
 
     v = V.uuid(msg=msg, default=True)
     assert v(None)
@@ -248,7 +248,7 @@ def test_all_of():
     assert v('bob') == 'bob'
     with py.test.raises(V.Invalid) as e:
         assert v('')
-        assert e.unpack_errors() == "bar"
+    assert e.value.unpack_errors() == {None: "bar"}
 
 
 def test_either():
@@ -530,7 +530,7 @@ def test_to_unicode():
     with py.test.raises(V.Invalid) as e:
         v = V.to_unicode(encoding='ascii', msg='cats')
         v(s)
-        assert e.unpack_errors() == "cats"
+    assert e.value.unpack_errors() == {None: "cats"}
 
 
 def test_is_unicode():
@@ -539,10 +539,10 @@ def test_is_unicode():
     assert isinstance(v(u"parrot"), unicode)
     with py.test.raises(V.Invalid) as e:
         v("parrot")
-        assert e.unpack_errors() == "This is not unicode"
+    assert e.value.unpack_errors() == {None: "This is not unicode"}
     with py.test.raises(V.Invalid) as e:
         v(1)
-        assert e.unpack_errors() == "This is not unicode"
+    assert e.value.unpack_errors() == {None: "This is not unicode"}
 
 
 def test_to_string():
@@ -558,7 +558,7 @@ def test_to_string():
     with py.test.raises(V.Invalid) as e:
         v = V.to_string(encoding='ascii', msg='cats')
         v(u)
-        assert e.unpack_errors() == "cats"
+    assert e.value.unpack_errors() == {None: "cats"}
 
 
 def test_is_string():
@@ -567,10 +567,10 @@ def test_is_string():
     assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
         v(u"parrot")
-        assert e.unpack_errors() == "This is not a string"
+    assert e.value.unpack_errors() == {None: "This is not a string"}
     with py.test.raises(V.Invalid) as e:
         v(1)
-        assert e.unpack_errors() == "This is not a string"
+    assert e.value.unpack_errors() == {None: "This is not a string"}
 
 
 def test_map():
@@ -648,7 +648,8 @@ def test_errors():
 
     with py.test.raises(V.Invalid) as e:
         data = schema(dict(foo=None, bar=None))
-        expected = [
-            "foo can't be converted",
-            "bar isn't an integer"]
-        assert e.unpack_errors() == expected
+    expected = {
+        None: ['Check the errors and try again.  Moron.'],
+        'bar': ["bar isn't an integer"],
+        'foo': ['foo is empty']}
+    assert e.value.unpack_errors(list_of_errors=True) == expected
