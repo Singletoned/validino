@@ -424,6 +424,21 @@ def test_schema_3():
     assert_invalid(lambda: v(d4), 'extra')
 
 
+def test_schema_4():
+    s = V.Schema(
+        {
+            'foo': V.integer(),
+            'bar': V.integer(),
+            ('foo', 'bar'): V.fields_equal(msg='flam', field=None)
+        },
+        msg="flibble")
+    d = dict(foo=1, bar=2)
+    with py.test.raises(V.Invalid) as e:
+        s(d)
+    errors = e.value.unpack_errors()
+    assert errors == {None: 'flam'}
+
+
 def test_filter_missing():
     s = V.Schema(
         dict(
@@ -449,6 +464,11 @@ def test_fields_match():
     assert d == v(d)
     v = V.fields_match('foo', 'poo', 'oink')
     assert_invalid(lambda: v(d), 'oink')
+    # Check field=None
+    v = V.fields_match('foo', 'bar', msg='flibble', field=None)
+    with py.test.raises(V.Invalid) as e:
+        v(dict(foo=1, bar=2))
+    assert e.value.unpack_errors() == {None: 'flibble'}
 
 
 def test_fields_equal():
@@ -463,6 +483,15 @@ def test_fields_equal():
     d = dict(foo='1', bar=1)
     expected = dict(foo=1, bar=1)
     assert s(d) == expected
+    # Check field=None
+    s = V.Schema({
+        'foo': V.integer(),
+        ('foo', 'bar'): V.fields_equal(u"foo and bar don't match", field=None)})
+    d = dict(foo='1', bar=2)
+    with py.test.raises(V.Invalid) as e:
+        s(d)
+    errors = e.value.unpack_errors()
+    assert errors == {None: u"foo and bar don't match"}
 
 
 def test_excursion():

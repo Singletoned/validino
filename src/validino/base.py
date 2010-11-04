@@ -48,6 +48,8 @@ __all__ = [
     'only_one_of']
 
 
+_default = object()
+
 def _add_error_message(d, k, msg):
     """
     internal utility for adding an error message to a
@@ -159,11 +161,7 @@ class Invalid(Exception):
 
     def unpack_errors(self, force_dict=True, list_of_errors=False):
         if self.errors or force_dict:
-            if self.message:
-                # drop the top level message if it is empty
-                result = {None: [self.message]}
-            else:
-                result = {}
+            result = {}
         else:
             return self.message
 
@@ -183,6 +181,10 @@ class Invalid(Exception):
                                 self._safe_append(result, name, unpacked)
                     else:
                         self._safe_append(result, name, m)
+
+        # Add default message to the end
+        if self.message:
+            self._safe_append(result, None, self.message)
 
         if not list_of_errors:
             result = dict([(e, m[0]) for e, m in result.items() if m])
@@ -671,7 +673,7 @@ def regex_sub(pat, sub):
         return re.sub(pat, sub, value)
     return f
 
-def fields_equal(msg=None, field=None):
+def fields_equal(msg=None, field=_default):
     """
     when passed a collection of values,
     verifies that they are all equal.
@@ -679,14 +681,14 @@ def fields_equal(msg=None, field=None):
     def f(values):
         if len(set(values)) != 1:
             m = _msg(msg, 'fields_equal', "fields not equal")
-            if field is None:
+            if field is _default:
                 raise Invalid(m)
             else:
                 raise Invalid({field: m})
         return values
     return f
 
-def fields_match(name1, name2, msg=None, field=None):
+def fields_match(name1, name2, msg=None, field=_default):
     """
     verifies that the values associated with the keys 'name1' and
     'name2' in value (which must be a dict) are identical.
@@ -694,10 +696,10 @@ def fields_match(name1, name2, msg=None, field=None):
     def f(value):
         if value[name1] != value[name2]:
             m = _msg(msg, 'fields_match', 'fields do not match')
-            if field is not None:
-                raise Invalid({field: m})
-            else:
+            if field is _default:
                 raise Invalid(m)
+            else:
+                raise Invalid({field: m})
         return value
     return f
 
