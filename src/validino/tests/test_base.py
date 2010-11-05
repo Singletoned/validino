@@ -220,6 +220,9 @@ def test_dict_nest():
     assert d1['frogs']['oswald'] == {'size' : 'medium'}
     d2 = V.dict_unnest(d1)
     assert d == d2
+    # Test empty values
+    assert V.dict_nest(dict()) == dict()
+    assert V.dict_unnest(dict()) == dict()
 
 
 def test_uuid():
