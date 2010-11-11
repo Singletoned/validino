@@ -418,9 +418,8 @@ def default(defaultValue):
 
 def all_of(*validators):
     """
-    Tries each of a series of validators in turn, swallowing any
-    exceptions they raise, and returns the result of the first one
-    that works.  If none work, the last exception caught is re-raised.
+    Applies each of a series of validators in turn, passing the return
+    value of each to the next.
     """
     def f(value):
         for v in validators:
