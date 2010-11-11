@@ -153,12 +153,12 @@ def test_clamp_length():
     assert_invalid(lambda: v('I told you that Ronald would eat it when you were in the bathroom'), 'kong')
 
 
-def test_compose():
+def test_all_of_2():
     messages = dict(integer='please enter an integer',
                   belongs='invalid choice',
                   min='too small',
                   max='too big')
-    v = V.compose(V.default(40),
+    v = V.all_of(V.default(40),
                 V.strip,
                 V.integer(msg=messages),
                 V.belongs(range(4, 100, 4), messages),
@@ -360,7 +360,7 @@ def test_schema_1():
                                       msg='username is too long'),
                        ),
              user_id=V.either(V.empty(),
-                              V.compose(V.integer('not an integer'),
+                              V.all_of(V.integer('not an integer'),
                                         V.clamp(min=1, max=9999, msg='out of range')
                                         )
                               ),
@@ -394,7 +394,7 @@ def test_schema_2():
             raise V.Invalid("incomplete data")
         if found.difference(allkeys):
             raise V.Invalid("extra data")
-    v = V.compose(V.check(check_keys), s)
+    v = V.all_of(V.check(check_keys), s)
     d1 = dict(x=40, y=20, text='hi there')
     assert v(d1) == d1
     d2 = dict(x=1, y=20, text='hi there')

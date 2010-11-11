@@ -9,7 +9,6 @@ __all__ = [
     'check',
     'clamp',
     'clamp_length',
-    'compose',
     'confirm_type',
     'default',
     'dict_nest',
@@ -265,7 +264,7 @@ class Schema(object):
         for k in sorted(self.subvalidators):
             vfunc = self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
-                vfunc = compose(*vfunc)
+                vfunc = all_of(*vfunc)
             have_plural = isinstance(k, (list,tuple))
             if have_plural:
                 vdata = tuple(res.get(x, data.get(x)) for x in k)
@@ -445,17 +444,6 @@ def either(*validators):
         raise last_exception
     return f
 
-def compose(*validators):
-    """
-    Applies each of a series of validators in turn, passing the return
-    value of each to the next.
-    """
-    def f(value):
-        for v in validators:
-            value = v(value)
-        return value
-    return f
-
 def check(*validators):
     """
     Returns a function that runs each of a series of validators
@@ -477,7 +465,7 @@ def excursion(*validators):
     excursion started.
     """
     def f(value):
-        compose(*validators)(value)
+        all_of(*validators)(value)
         return value
     return f
 
