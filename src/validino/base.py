@@ -717,6 +717,8 @@ def nested(**kwargs):
                 data[k] = v(value[k])
             except KeyError:
                 errors[k] = "key %r is missing" % k
+            except Invalid, e:
+                errors[k] = e
         if errors:
             raise Invalid(errors)
         return data

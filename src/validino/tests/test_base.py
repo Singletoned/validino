@@ -55,8 +55,10 @@ def test_nested_with_bad_data():
     data = dict(
         flim="Flim",
         flam="Flam")
-    with py.test.raises(V.Invalid):
+    with py.test.raises(V.Invalid) as e:
         validator(data)
+    errors = e.value.unpack_errors()
+    assert errors['flim'] == "not an integer"
 
 
 def test_nested_many():
