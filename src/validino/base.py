@@ -44,6 +44,7 @@ __all__ = [
     'to_string',
     'translate',
     'nested',
+    'nested_many',
     'only_one_of']
 
 
@@ -158,7 +159,7 @@ class Invalid(Exception):
     def add_error_message(self, key, message):
         _add_error_message(self.errors, key, message)
 
-    def unpack_errors(self, force_dict=True, list_of_errors=False):
+    def unpack_errors(self, force_dict=True, list_of_errors=False, nested=False):
         if self.errors or force_dict:
             result = {}
         else:
@@ -169,13 +170,19 @@ class Invalid(Exception):
                 for m in msglist:
                     if isinstance(m, Exception):
                         try:
-                            unpacked = m.unpack_errors(force_dict=False)
+                            unpacked = m.unpack_errors(
+                                force_dict=False,
+                                list_of_errors=list_of_errors,
+                                nested=nested)
                         except AttributeError:
                             self._safe_append(result, name, m.args[0])
 
                         else:
                             if isinstance(unpacked, dict):
-                                self._join_dicts(result, unpacked)
+                                if nested:
+                                    result[name] = unpacked
+                                else:
+                                    self._join_dicts(result, unpacked)
                             elif unpacked:
                                 self._safe_append(result, name, unpacked)
                     else:
@@ -190,6 +197,8 @@ class Invalid(Exception):
             for e, m in result.items():
                 if isinstance(m, types.ListType):
                     flattened[e] = m[0]
+                elif isinstance(m, types.DictType) and len(m) == 1 and m.has_key(None):
+                    flattened[e] = m[None]
                 else:
                     flattened[e] = m
             return flattened
@@ -711,6 +720,27 @@ def nested(**kwargs):
         if errors:
             raise Invalid(errors)
         return data
+    return f
+
+def nested_many(sub_validator):
+    """
+    Applies the validator to each of the values
+    """
+    def f(value):
+        data = dict()
+        errors = dict()
+        if value:
+            for k, v in value.items():
+                try:
+                    data[k] = sub_validator(v)
+                except Invalid, e:
+                    errors[k] = e
+            if errors:
+                raise Invalid(errors)
+            else:
+                return value
+        else:
+            return {}
     return f
 
 def only_one_of(msg=None, field=None):

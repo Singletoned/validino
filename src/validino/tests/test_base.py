@@ -59,6 +59,46 @@ def test_nested_with_bad_data():
         validator(data)
 
 
+def test_nested_many():
+    validator = V.nested_many(
+        V.integer())
+    data = dict(
+        a=1,
+        b=2,
+        c=3)
+    result = validator(data)
+    assert result == data
+
+
+def test_nested_many_fail():
+    schema = V.nested_many(
+        V.integer())
+    data = dict(
+        a=1,
+        b="two",
+        c=3)
+    with py.test.raises(V.Invalid) as e:
+        result = schema(data)
+    errors = e.value.unpack_errors(nested=True)
+    assert errors['b'] == "not an integer"
+
+
+def test_nested_many_fail_nested_errors():
+    schema = V.Schema(
+        dict(
+            foo=V.nested_many(
+                V.integer())))
+    data = dict(
+        foo=dict(
+            a=1,
+            b="two",
+            c=3))
+    with py.test.raises(V.Invalid) as e:
+        result = schema(data)
+    errors = e.value.unpack_errors(nested=True)
+    assert errors['foo']['b'] == "not an integer"
+
+
 def test_only_one_of():
     v = V.only_one_of(msg="Please only choose one value")
     assert v((0, 1)) == (0, 1)
