@@ -702,11 +702,14 @@ def nested(**kwargs):
     """
     def f(value):
         data = dict()
+        errors = dict()
         for k, v in kwargs.items():
             try:
                 data[k] = v(value[k])
             except KeyError:
-                raise Invalid
+                errors[k] = "key %r is missing" % k
+        if errors:
+            raise Invalid(errors)
         return data
     return f
 

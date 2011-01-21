@@ -42,8 +42,10 @@ def test_nested_missing():
     validator = V.nested(
         flim=V.to_unicode(),
         flam=V.to_unicode())
-    with py.test.raises(V.Invalid):
+    with py.test.raises(V.Invalid) as e:
         validator(data)
+    errors = e.value.unpack_errors()
+    assert errors == dict(flam="key 'flam' is missing")
 
 
 def test_nested_with_bad_data():
