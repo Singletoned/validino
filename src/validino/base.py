@@ -2,7 +2,7 @@ import datetime
 import re
 import time
 from uuid import UUID, uuid1
-
+import types
 
 __all__ = [
     'Invalid',
@@ -186,7 +186,13 @@ class Invalid(Exception):
             self._safe_append(result, None, self.message)
 
         if not list_of_errors:
-            result = dict([(e, m[0]) for e, m in result.items() if m])
+            flattened = dict()
+            for e, m in result.items():
+                if isinstance(m, types.ListType):
+                    flattened[e] = m[0]
+                else:
+                    flattened[e] = m
+            return flattened
 
         return result
 
