@@ -260,9 +260,9 @@ class Schema(object):
 
     def __call__(self, data):
         if not self.filter_extra:
-            res = data
+            result = data
         else:
-            res = {}
+            result = {}
         exceptions = {}
         if not (self.allow_extra and self.allow_missing):
             inputkeys = set(data.keys())
@@ -282,9 +282,9 @@ class Schema(object):
                 vfunc = all_of(*vfunc)
             have_plural = isinstance(k, (list,tuple))
             if have_plural:
-                vdata = tuple(res.get(x, data.get(x)) for x in k)
+                vdata = tuple(result.get(x, data.get(x)) for x in k)
             else:
-                vdata = res.get(k, data.get(k))
+                vdata = result.get(k, data.get(k))
             try:
                 tmp = vfunc(vdata)
             except Exception, e:
@@ -296,15 +296,15 @@ class Schema(object):
                 exceptions[name].append(e)
             else:
                 if have_plural:
-                    res.update(dict(zip(k, tmp)))
+                    result.update(dict(zip(k, tmp)))
                 else:
-                    res[k] = tmp
+                    result[k] = tmp
 
         if exceptions:
             m = _msg(self.msg, "schema.error",
                      "Problems were found in the submitted data.")
             raise Invalid(m, exceptions)
-        return res
+        return result
 
 
 def confirm_type(typespec, msg=None):
