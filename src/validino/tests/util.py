@@ -1,13 +1,9 @@
+import py
+
 import validino as V
 
-def assert_invalid(f, msg):
-    try:
+def assert_invalid(f, expected):
+    with py.test.raises(V.Invalid) as e:
         f()
-    except V.Invalid, e:
-        print e.message, e.errors
-        if isinstance(msg, basestring):
-            assert e.message == msg, "expected '%s', got '%s'" % (msg, e.message)
-        else:
-            assert e.errors == msg, "expected '%s', got '%s'" % (msg, e.errors)
-    else:
-        assert False, "exception should be raised"
+    errors = e.value.unpack_errors()
+    assert errors == expected

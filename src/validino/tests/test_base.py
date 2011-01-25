@@ -7,6 +7,32 @@ from validino.util import partial
 from util import assert_invalid
 
 
+def test_Invalid():
+    error = V.Invalid("foo")
+    assert error.errors == {None: "foo"}
+    error = V.Invalid(dict(foo="bar"))
+    assert error.errors == {'foo': "bar"}
+
+
+def test_Invalid_unpack_errors():
+    error = V.Invalid(
+        dict(
+            foo=V.Invalid(
+                dict(
+                    bar="flim"))))
+    expected = {'foo': {'bar':"flim"}}
+    result = error.unpack_errors()
+    assert expected == result
+
+    error = V.Invalid(
+        V.Invalid(
+            dict(
+                foo="bar")))
+    expected = {'foo': "bar"}
+    result = error.unpack_errors()
+    assert expected == result
+
+
 def test_nested_schema():
     nested_validators = dict(
         foo=V.to_unicode(),
@@ -60,6 +86,19 @@ def test_nested_with_bad_data():
     errors = e.value.unpack_errors()
     assert errors['flim'] == "not an integer"
 
+    validator = V.nested(
+        foo=V.nested(
+            flam=V.to_unicode(),
+            flim=V.integer()))
+    data = dict(
+            foo=dict(
+                flim="Flim",
+                flam="Flam"))
+    with py.test.raises(V.Invalid) as e:
+        validator(data)
+    errors = e.value.unpack_errors()
+    assert errors['foo']['flim'] == "not an integer"
+
 
 def test_nested_many():
     validator = V.nested_many(
@@ -81,7 +120,7 @@ def test_nested_many_fail():
         c=3)
     with py.test.raises(V.Invalid) as e:
         result = schema(data)
-    errors = e.value.unpack_errors(nested=True)
+    errors = e.value.unpack_errors()
     assert errors['b'] == "not an integer"
 
 
@@ -97,7 +136,7 @@ def test_nested_many_fail_nested_errors():
             c=3))
     with py.test.raises(V.Invalid) as e:
         result = schema(data)
-    errors = e.value.unpack_errors(nested=True)
+    errors = e.value.unpack_errors()
     assert errors['foo']['b'] == "not an integer"
 
 
@@ -111,17 +150,19 @@ def test_only_one_of():
     schema = V.Schema({
         'field1': (V.integer()),
         'field2': (V.integer()),
-        ('field1', 'field2'): (
+        ('field1', 'field2'): 
             V.only_one_of(
                 msg="Please only choose one value",
-                field='field1'))})
+                field='field1')})
     assert schema(dict(field1="0", field2="1")) == dict(field1=0, field2=1)
     with py.test.raises(V.Invalid) as e:
         schema(dict(field1=True, field2=1))
+    
     errors = e.value.unpack_errors()
-    assert errors == {
+    expected = {
         None: "Problems were found in the submitted data.",
         "field1": "Please only choose one value"}
+    assert expected == errors
 
 
 def test_to_boolean():
@@ -150,14 +191,18 @@ def test_is_scalar():
     msg = 'sc'
     v = V.is_scalar(msg=msg)
     assert v(40) == 40
-    assert_invalid(lambda: v([12]), msg)
+    assert_invalid(
+        lambda: v([40]),
+        {None: msg})
 
 
 def test_is_list():
     msg = "list"
     v = V.is_list(msg=msg)
     assert v([40]) == [40]
-    assert_invalid(lambda: v(40), msg)
+    assert_invalid(
+        lambda: v(40),
+        {None: msg})
 
 
 def test_to_scalar():
@@ -177,24 +222,34 @@ def test_clamp():
     msg = 'You are a pear'
     v = V.clamp(min=30, msg=msg)
     assert v(50) == 50
-    assert_invalid(lambda: v(20), msg)
+    assert_invalid(
+        lambda: v(20),
+        {None: msg})
 
     v = V.clamp(max=100, msg=dict(min='haha', max='kong'))
     assert v(40) == 40
-    assert_invalid(lambda: v(120), 'kong')
+    assert_invalid(
+        lambda: v(120),
+        {None: 'kong'})
 
     v = V.clamp(max=100, msg=dict(min='haha'))
-    assert_invalid(lambda: v(120), 'value above maximum')
+    assert_invalid(
+        lambda: v(120),
+        {None: 'value above maximum'})
 
 
 def test_clamp_length():
     msg = 'You are a pear'
     v = V.clamp_length(min=3, msg=msg)
     assert v('500') == '500'
-    assert_invalid(lambda: v('eh'), msg)
+    assert_invalid(
+        lambda: v('eh'),
+        {None: msg})
     v = V.clamp_length(max=10, msg=dict(minlen='haha', maxlen='kong'))
     assert v('40') == '40'
-    assert_invalid(lambda: v('I told you that Ronald would eat it when you were in the bathroom'), 'kong')
+    assert_invalid(
+        lambda: v('I told you that Ronald would eat it when you were in the bathroom'),
+        {None: 'kong'})
 
 
 def test_all_of_2():
@@ -210,10 +265,18 @@ def test_all_of_2():
     assert v(None) == 40
     assert v('40') == 40
     assert v('44  ') == 44
-    assert_invalid(lambda: v(' prick '), messages['integer'])
-    assert_invalid(lambda: v(' 41  '), messages['belongs'])
-    assert_invalid(lambda: v('96'), messages['max'])
-    assert_invalid(lambda: v('8'), messages['min'])
+    assert_invalid(
+        lambda: v(' prick '), 
+        {None: messages['integer']})
+    assert_invalid(
+        lambda: v(' 41  '), 
+        {None: messages['belongs']})
+    assert_invalid(
+        lambda: v('96'), 
+        {None: messages['max']})
+    assert_invalid(
+        lambda: v('8'), 
+        {None: messages['min']})
 
 
 def test_check():
@@ -303,55 +366,73 @@ def test_either():
     v = V.either(V.empty(), V.integer(msg=msg))
     assert v('') == ''
     assert v('40') == 40
-    assert_invalid(lambda: v('bonk'), msg)
+    assert_invalid(
+        lambda: v('bonk'),
+        {None: msg})
 
 
 def test_empty():
     v = V.empty(msg="scorch me")
     assert v('') == ''
     assert v(None) == None
-    assert_invalid(lambda: v("bob"), 'scorch me')
+    assert_invalid(
+        lambda: v("bob"),
+        {None: 'scorch me'})
 
 
 def test_equal():
     v = V.equal('egg', msg="not equal")
     assert v('egg') == 'egg'
-    assert_invalid(lambda: v('bob'), 'not equal')
+    assert_invalid(
+        lambda: v('bob'),
+        {None: 'not equal'})
 
 
 def test_not_equal():
     v = V.not_equal('egg', msg='equal')
     assert v('plop') == 'plop'
-    assert_invalid(lambda: v('egg'), 'equal')
+    assert_invalid(
+        lambda: v('egg'),
+        {None: 'equal'})
 
 
 def test_integer():
     msg = "please enter an integer"
     v = V.integer(msg=msg)
     assert v('40') == 40
-    assert_invalid(lambda: v('whack him until he screams'), msg)
+    assert_invalid(
+        lambda: v('whack him until he screams'),
+        {None: msg})
 
 
 def test_not_empty():
     msg = "hammer my xylophone"
     v = V.not_empty(msg=msg)
     assert v("frog") == 'frog'
-    assert_invalid(lambda: v(''), msg)
-    assert_invalid(lambda: v(None), msg)
+    assert_invalid(
+        lambda: v(''),
+        {None: msg})
+    assert_invalid(
+        lambda: v(None),
+        {None: msg})
 
 
 def test_belongs():
     msg = "rinse me a robot"
     v = V.belongs('pinko widget frog lump'.split(), msg=msg)
     assert v('pinko') == 'pinko'
-    assert_invalid(lambda: v('snot'), msg)
+    assert_invalid(
+        lambda: v('snot'),
+        {None: msg})
 
 
 def test_not_belongs():
     msg = "belittle my humbug"
     v = V.not_belongs(range(5), msg=msg)
     assert v('pinko') == 'pinko'
-    assert_invalid(lambda: v(4), msg=msg)
+    assert_invalid(
+        lambda: v(4),
+        {None: msg})
 
 
 def test_parse_date():
@@ -380,13 +461,17 @@ def test_parse_time():
     v = V.parse_time(fmt, msg)
     ts = v('10 03 2007')[:3]
     assert ts == (2007, 10, 3)
-    assert_invalid(lambda: v('tough nuggie'), msg)
+    assert_invalid(
+        lambda: v('tough nuggie'),
+        {None: msg})
 
 
 def test_regex():
     v = V.regex('shrubbery\d{3}$', 'regex')
     assert v('shrubbery222') == 'shrubbery222'
-    assert_invalid(lambda: v('buy a shrubbery333, ok?'), 'regex')
+    assert_invalid(
+        lambda: v('buy a shrubbery333, ok?'),
+        {None: 'regex'})
 
 
 def test_regex_sub():
@@ -442,11 +527,17 @@ def test_schema_2():
     d1 = dict(x=40, y=20, text='hi there')
     assert v(d1) == d1
     d2 = dict(x=1, y=20, text='hi there')
-    assert_invalid(lambda: v(d2), 'schema')
+    assert_invalid(
+        lambda: v(d2),
+        {None: 'schema', 'x': 'clampx'})
     d3 = dict(x=10, y=10)
-    assert_invalid(lambda: v(d3), 'incomplete data')
+    assert_invalid(
+        lambda: v(d3),
+        {None: 'incomplete data'})
     d4 = dict(x=10, y=10, text='ho', pingpong='lather')
-    assert_invalid(lambda: v(d4), 'extra data')
+    assert_invalid(
+        lambda: v(d4),
+        {None: 'extra data'})
 
 
 def test_schema_3():
@@ -464,11 +555,17 @@ def test_schema_3():
     d1 = dict(x=40, y=20, text='hi there')
     assert v(d1) == d1
     d2 = dict(x=1, y=20, text='hi there')
-    assert_invalid(lambda: v(d2), 'schema')
+    assert_invalid(
+        lambda: v(d2),
+        {None: 'schema', 'x': 'clampx'})
     d3 = dict(x=10, y=10)
-    assert_invalid(lambda: v(d3), 'missing')
+    assert_invalid(
+        lambda: v(d3),
+        {None: 'missing'})
     d4 = dict(x=10, y=10, text='ho', pingpong='lather')
-    assert_invalid(lambda: v(d4), 'extra')
+    assert_invalid(
+        lambda: v(d4),
+        {None: 'extra'})
 
 
 def test_schema_4():
@@ -510,7 +607,9 @@ def test_fields_match():
     v = V.fields_match('foo', 'goo')
     assert d == v(d)
     v = V.fields_match('foo', 'poo', 'oink')
-    assert_invalid(lambda: v(d), 'oink')
+    assert_invalid(
+        lambda: v(d),
+        {None: 'oink'})
     # Check field=None
     v = V.fields_match('foo', 'bar', msg='flibble', field=None)
     with py.test.raises(V.Invalid) as e:
@@ -523,7 +622,9 @@ def test_fields_equal():
     v = V.fields_equal('hog')
     assert values == v(values)
     values = ('tim', 'worthy')
-    assert_invalid(lambda: v(values), 'hog')
+    assert_invalid(
+        lambda: v(values),
+        {None: 'hog'})
     s = V.Schema({
         'foo': V.integer(),
         ('foo', 'bar'): V.fields_equal(u"foo and bar don't match")})
@@ -548,19 +649,25 @@ def test_excursion():
                   V.belongs(['gadzooks', 'willy'],
                             msg='pancreatic'))
     assert x == v(x)
-    assert_invalid(lambda: v('hieratic impulses'), 'pancreatic')
+    assert_invalid(
+        lambda: v('hieratic impulses'),
+        {None: 'pancreatic'})
 
 
 def test_confirm_type():
     v = V.confirm_type((int, float), 'not a number')
     assert v(45) == 45
-    assert_invalid(lambda: v('45'), 'not a number')
+    assert_invalid(
+        lambda: v('45'),
+        {None: 'not a number'})
 
 
 def test_translate():
     v = V.translate(dict(y=True, f=False),  'dong')
     assert v('y') == True
-    assert_invalid(lambda: v('pod'), 'dong')
+    assert_invalid(
+        lambda: v('pod'),
+        {None: 'dong'})
 
 
 def test_to_unicode():
@@ -637,6 +744,7 @@ def test_unpack_1():
 
 
 def test_unpack_2():
+    "Empty string keys should be collapsed"
     e = V.Invalid({'ding' : [V.Invalid('pod')],
                  'dong' : [V.Invalid('piddle')]})
 
@@ -652,15 +760,14 @@ def test_unpack_3():
     errors = dict(frog="My peachy frog hurts",
                 dog="My dog has warts up and down his spine",
                 insect="I would characterize this insect as flawed")
-    e = V.Invalid(**errors)
+    e = V.Invalid(errors)
 
     u = e.unpack_errors()
     assert set(u) == set(('frog', 'dog', 'insect'))
     for v in u.itervalues():
         assert isinstance(v, basestring)
-        # assert len(v) == 1
 
-    e2 = V.Invalid(frog='squished')
+    e2 = V.Invalid(dict(frog='squished'))
     u2 = e2.unpack_errors()
     assert u2 == dict(frog='squished')
 
@@ -670,10 +777,6 @@ def test_unpack_3():
     assert set(u3) == set(('frog', 'dog', 'insect'))
     for k, v in u3.iteritems():
         assert isinstance(v, basestring)
-        # if k == 'frog':
-        #     assert len(v) == 2
-        # else:
-        #     assert len(v) == 1
 
 def test_errors():
     schema = V.Schema(
@@ -688,8 +791,11 @@ def test_errors():
 
     with py.test.raises(V.Invalid) as e:
         data = schema(dict(foo=None, bar=None))
+
     expected = {
-        None: ['Check the errors and try again.  Moron.'],
-        'bar': ["bar isn't an integer"],
-        'foo': ['foo is empty']}
-    assert e.value.unpack_errors(list_of_errors=True) == expected
+        None: 'Check the errors and try again.  Moron.',
+        'bar': "bar isn't an integer",
+        'foo': 'foo is empty'}
+    
+    result = e.value.unpack_errors()
+    assert result == expected

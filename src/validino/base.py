@@ -105,105 +105,51 @@ def dict_unnest(data, separator='.'):
             res[k] = v
     return res
 
+
 class Invalid(Exception):
-    # this should support nested exceptions and
-    # extracting messages from some context
+    """"""
+    def __init__(self, errors=None, field=_default):
+        if not errors:
+            errors = dict()
+        elif not isinstance(errors, dict):
+            errors = {None: errors}
+        if not field is _default:
+            self.field = field
+        Exception.__init__(self, errors)
+        self.errors = errors
 
-    def __init__(self,
-                 *args,
-                 **kw):
-        d = {}
-        p = []
-        for a in args:
-            if isinstance(a, dict):
-                self._join_dicts(d, a)
-            else:
-                p.append(a)
-        d.update(self._normalize_dict(kw))
-        Exception.__init__(self, p)
-        self.errors = d
-        if p:
-            self.message = p[0]
+    def _unpack_error(self, name, error):
+        if isinstance(error, dict):
+            result = dict(
+                [(key, self._unpack_error(value)) for (key, value) in error.iteritems()])
+        elif isinstance(error, (list, tuple)):
+            name, result = self._unpack_error(name, error[0])
+        elif isinstance(error, Invalid):
+            name = getattr(error, 'field', name)
+            result = error._unpack_errors()
         else:
-            self.message = None
+            result = error
+        return (name, result)
 
-    @staticmethod
-    def _join_dicts(res, d):
-        for k, v in d.iteritems():
-            res.setdefault(k, [])
-            if not isinstance(v, (list,tuple)):
-                res[k].append(v)
-            else:
-                res[k].extend(v)
-
-    @staticmethod
-    def _normalize_dict(d):
-        res = {}
-        if d:
-            for k, v in d.iteritems():
-                if not isinstance(v, (list,tuple)):
-                    res[k] = [v]
-                else:
-                    res[k] = v
-        return res
-
-    @staticmethod
-    def _safe_append(adict, key, thing):
-        if not isinstance(thing, (list, dict)):
-            thing = [thing]
-        try:
-            adict[key].extend(thing)
-        except KeyError:
-            adict[key] = thing
-
-    def add_error_message(self, key, message):
-        _add_error_message(self.errors, key, message)
-
-    def unpack_errors(self, force_dict=True, list_of_errors=False, nested=False):
-        if self.errors or force_dict:
-            result = {}
+    def _unpack_errors(self):
+        result = dict()
+        for key, value in self.errors.iteritems():
+            name, error = self._unpack_error(key, value)
+            result[name] = error
+                
+        if result.keys() == [None]:
+            return result[None]
+        elif result.keys() == ['']:
+            return result['']
         else:
-            return self.message
-
-        if self.errors:
-            for name, msglist in self.errors.iteritems():
-                for m in msglist:
-                    if isinstance(m, Exception):
-                        try:
-                            unpacked = m.unpack_errors(
-                                force_dict=False,
-                                list_of_errors=list_of_errors,
-                                nested=nested)
-                        except AttributeError:
-                            self._safe_append(result, name, m.args[0])
-
-                        else:
-                            if isinstance(unpacked, dict):
-                                if nested:
-                                    result[name] = unpacked
-                                else:
-                                    self._join_dicts(result, unpacked)
-                            elif unpacked:
-                                self._safe_append(result, name, unpacked)
-                    else:
-                        self._safe_append(result, name, m)
-
-        # Add default message to the end
-        if self.message:
-            self._safe_append(result, None, self.message)
-
-        if not list_of_errors:
-            flattened = dict()
-            for e, m in result.items():
-                if isinstance(m, types.ListType):
-                    flattened[e] = m[0]
-                elif isinstance(m, types.DictType) and len(m) == 1 and m.has_key(None):
-                    flattened[e] = m[None]
-                else:
-                    flattened[e] = m
-            return flattened
-
-        return result
+            return result
+                
+    def unpack_errors(self):
+        result = self._unpack_errors()
+        if isinstance(result, basestring):
+            return {None: result}
+        else:
+            return result
 
 
 class Schema(object):
@@ -291,9 +237,8 @@ class Schema(object):
                 # if the exception specifies a field name,
                 # let that override the key in the validator
                 # dictionary
-                name = getattr(e, 'field', k) or k
-                exceptions.setdefault(name, [])
-                exceptions[name].append(e)
+                name = getattr(e, 'field', k)
+                exceptions[name] = e
             else:
                 if have_plural:
                     result.update(dict(zip(k, tmp)))
@@ -301,9 +246,11 @@ class Schema(object):
                     result[k] = tmp
 
         if exceptions:
-            m = _msg(self.msg, "schema.error",
-                     "Problems were found in the submitted data.")
-            raise Invalid(m, exceptions)
+            if not exceptions.has_key(None):
+                m = _msg(self.msg, "schema.error",
+                         "Problems were found in the submitted data.")
+                exceptions[None] = m
+            raise Invalid(exceptions)
         return result
 
 
@@ -686,7 +633,7 @@ def fields_equal(msg=None, field=_default):
             if field is _default:
                 raise Invalid(m)
             else:
-                raise Invalid({field: m})
+                raise Invalid(m, field=field)
         return values
     return f
 
@@ -753,7 +700,7 @@ def only_one_of(msg=None, field=None):
         if sum([int(bool(val)) for val in values]) > 1:
             m = _msg(msg, 'only_one_of', 'more than one value present')
             if field is not None:
-                raise Invalid({field: m})
+                raise Invalid(m, field=field)
             else:
                 raise Invalid(m)
         return values
