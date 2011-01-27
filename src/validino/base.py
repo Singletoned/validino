@@ -660,6 +660,8 @@ def nested(**kwargs):
         data = dict()
         errors = dict()
         for k, v in kwargs.items():
+            if isinstance(v, tuple):
+                v = all_of(*v)
             try:
                 data[k] = v(value[k])
             except KeyError:

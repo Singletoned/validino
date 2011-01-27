@@ -66,7 +66,9 @@ def test_nested_missing():
     data = dict(
         flim="Flim")
     validator = V.nested(
-        flim=V.to_unicode(),
+        flim=(
+            V.to_unicode(),
+            V.not_empty()),
         flam=V.to_unicode())
     with py.test.raises(V.Invalid) as e:
         validator(data)
