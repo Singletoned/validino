@@ -121,7 +121,7 @@ class Invalid(Exception):
     def _unpack_error(self, name, error):
         if isinstance(error, dict):
             result = dict(
-                [(key, self._unpack_error(value)) for (key, value) in error.iteritems()])
+                [self._unpack_error(key, value) for (key, value) in error.iteritems()])
         elif isinstance(error, (list, tuple)):
             name, result = self._unpack_error(name, error[0])
         elif isinstance(error, Invalid):

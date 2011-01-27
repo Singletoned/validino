@@ -25,6 +25,14 @@ def test_Invalid_unpack_errors():
     assert expected == result
 
     error = V.Invalid(
+        dict(
+            foo=dict(
+                bar="flim")))
+    expected = {'foo': {'bar':"flim"}}
+    result = error.unpack_errors()
+    assert expected == result
+
+    error = V.Invalid(
         V.Invalid(
             dict(
                 foo="bar")))
@@ -139,7 +147,10 @@ def test_nested_many_fail_nested_errors():
     with py.test.raises(V.Invalid) as e:
         result = schema(data)
     errors = e.value.unpack_errors()
-    assert errors['foo']['b'] == "not an integer"
+    expected = {
+        'foo': {'b': "not an integer"},
+        None: "Problems were found in the submitted data."}
+    assert expected == errors
 
 
 def test_only_one_of():
