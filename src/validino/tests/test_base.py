@@ -40,6 +40,19 @@ def test_Invalid_unpack_errors():
     result = error.unpack_errors()
     assert expected == result
 
+def test_Schema_errors():
+    schema = V.Schema(
+        dict(
+            foo=V.integer(msg="number, not word, idiot!")))
+    data = dict(
+        foo="one")
+    expected = {
+        'foo': "number, not word, idiot!",
+        None: "Problems were found in the submitted data."}
+    with py.test.raises(V.Invalid) as e:
+        schema(data)
+    result = e.value.errors
+    assert expected == result
 
 def test_nested_schema():
     nested_validators = dict(
