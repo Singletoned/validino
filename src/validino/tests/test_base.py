@@ -152,6 +152,10 @@ def test_nested_many_fail():
     errors = e.value.unpack_errors()
     assert errors['b'] == "not an integer"
 
+    with py.test.raises(V.Invalid) as e:
+        result = schema(None)
+    errors = e.value.unpack_errors()
+    assert errors == {None: "No data found"}
 
 def test_nested_many_fail_nested_errors():
     schema = V.Schema(

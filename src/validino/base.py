@@ -697,7 +697,7 @@ def nested_many(sub_validator):
             else:
                 return value
         else:
-            return {}
+            raise Invalid("No data found")
     return f
 
 def only_one_of(msg=None, field=None):
