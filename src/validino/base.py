@@ -670,7 +670,7 @@ def nested(**kwargs):
                 v = all_of(*v)
             try:
                 data[k] = v(value[k])
-            except KeyError:
+            except (KeyError, TypeError):
                 errors[k] = "key %r is missing" % k
             except Invalid, e:
                 errors[k] = e

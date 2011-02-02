@@ -96,6 +96,12 @@ def test_nested_missing():
     errors = e.value.unpack_errors()
     assert errors == dict(flam="key 'flam' is missing")
 
+    with py.test.raises(V.Invalid) as e:
+        validator(None)
+    errors = e.value.unpack_errors()
+    assert errors == dict(
+        flam="key 'flam' is missing",
+        flim="key 'flim' is missing")
 
 def test_nested_with_bad_data():
     validator = V.nested(
