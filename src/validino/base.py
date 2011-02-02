@@ -136,14 +136,14 @@ class Invalid(Exception):
         for key, value in self.errors.iteritems():
             name, error = self._unpack_error(key, value)
             result[name] = error
-                
+
         if result.keys() == [None]:
             return result[None]
         elif result.keys() == ['']:
             return result['']
         else:
             return result
-                
+
     def unpack_errors(self):
         result = self._unpack_errors()
         if isinstance(result, basestring):

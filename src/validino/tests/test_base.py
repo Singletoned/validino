@@ -186,14 +186,14 @@ def test_only_one_of():
     schema = V.Schema({
         'field1': (V.integer()),
         'field2': (V.integer()),
-        ('field1', 'field2'): 
+        ('field1', 'field2'):
             V.only_one_of(
                 msg="Please only choose one value",
                 field='field1')})
     assert schema(dict(field1="0", field2="1")) == dict(field1=0, field2=1)
     with py.test.raises(V.Invalid) as e:
         schema(dict(field1=True, field2=1))
-    
+
     errors = e.value.unpack_errors()
     expected = {
         None: "Problems were found in the submitted data.",
@@ -302,16 +302,16 @@ def test_all_of_2():
     assert v('40') == 40
     assert v('44  ') == 44
     assert_invalid(
-        lambda: v(' prick '), 
+        lambda: v(' prick '),
         {None: messages['integer']})
     assert_invalid(
-        lambda: v(' 41  '), 
+        lambda: v(' 41  '),
         {None: messages['belongs']})
     assert_invalid(
-        lambda: v('96'), 
+        lambda: v('96'),
         {None: messages['max']})
     assert_invalid(
-        lambda: v('8'), 
+        lambda: v('8'),
         {None: messages['min']})
 
 
@@ -832,6 +832,6 @@ def test_errors():
         None: 'Check the errors and try again.  Moron.',
         'bar': "bar isn't an integer",
         'foo': 'foo is empty'}
-    
+
     result = e.value.unpack_errors()
     assert result == expected
