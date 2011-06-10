@@ -184,8 +184,8 @@ def test_only_one_of():
         v((1, False, None, True))
     assert e.value.unpack_errors() == {None: "Please only choose one value"}
     schema = V.Schema({
-        'field1': (V.integer()),
-        'field2': (V.integer()),
+        'field1': (V.to_integer()),
+        'field2': (V.to_integer()),
         ('field1', 'field2'):
             V.only_one_of(
                 msg="Please only choose one value",
@@ -295,7 +295,7 @@ def test_all_of_2():
                   max='too big')
     v = V.all_of(V.default(40),
                 V.strip,
-                V.integer(msg=messages),
+                V.to_integer(msg=messages),
                 V.belongs(range(4, 100, 4), messages),
                 V.clamp(min=20, max=50, msg=messages))
     assert v(None) == 40
@@ -399,7 +399,7 @@ def test_all_of():
 
 def test_either():
     msg = "please enter an integer"
-    v = V.either(V.empty(), V.integer(msg=msg))
+    v = V.either(V.empty(), V.to_integer(msg=msg))
     assert v('') == ''
     assert v('40') == 40
     assert_invalid(
@@ -434,7 +434,7 @@ def test_not_equal():
 
 def test_integer():
     msg = "please enter an integer"
-    v = V.integer(msg=msg)
+    v = V.to_integer(msg=msg)
     assert v('40') == 40
     assert_invalid(
         lambda: v('whack him until he screams'),
@@ -525,7 +525,7 @@ def test_schema_1():
                                       msg='username is too long'),
                        ),
              user_id=V.either(V.empty(),
-                              V.all_of(V.integer('not an integer'),
+                              V.all_of(V.to_integer('not an integer'),
                                         V.clamp(min=1, max=9999, msg='out of range')
                                         )
                               ),
@@ -622,8 +622,8 @@ def test_schema_4():
 def test_filter_missing():
     s = V.Schema(
         dict(
-            x=V.integer(),
-            y=V.integer()),
+            x=V.to_integer(),
+            y=V.to_integer()),
         filter_extra=False)
 
     d1 = dict(x="1", y="2", foo="bar")
@@ -662,14 +662,14 @@ def test_fields_equal():
         lambda: v(values),
         {None: 'hog'})
     s = V.Schema({
-        'foo': V.integer(),
+        'foo': V.to_integer(),
         ('foo', 'bar'): V.fields_equal(u"foo and bar don't match")})
     d = dict(foo='1', bar=1)
     expected = dict(foo=1, bar=1)
     assert s(d) == expected
     # Check field=None
     s = V.Schema({
-        'foo': V.integer(),
+        'foo': V.to_integer(),
         ('foo', 'bar'): V.fields_equal(u"foo and bar don't match", field=None)})
     d = dict(foo='1', bar=2)
     with py.test.raises(V.Invalid) as e:

@@ -25,6 +25,7 @@ __all__ = [
     'not_equal',
     'uuid',
     'integer',
+    'to_integer',
     'to_boolean',
     'not_empty',
     'not_belongs',
@@ -571,7 +572,7 @@ def uuid(msg=None, default=False):
         return v
     return f
 
-def integer(msg=None):
+def to_integer(msg=None):
     """
     attempts to coerce the value into an integer.
     """
@@ -579,6 +580,17 @@ def integer(msg=None):
         try:
             return int(value)
         except (TypeError, ValueError):
+            raise Invalid(_msg(msg, "integer", "not an integer"))
+    return f
+
+def integer(msg=None):
+    """
+    Tests whether the value in an integer
+    """
+    def f(value):
+        if isinstance(value, int):
+            return value
+        else:
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
