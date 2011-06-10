@@ -707,7 +707,7 @@ def nested_many(sub_validator):
             if errors:
                 raise Invalid(errors)
             else:
-                return value
+                return data
         else:
             raise Invalid("No data found")
     return f

@@ -131,13 +131,17 @@ def test_nested_with_bad_data():
 
 def test_nested_many():
     validator = V.nested_many(
-        V.integer())
+        V.to_integer())
     data = dict(
+        a="1",
+        b="2",
+        c=3.0)
+    expected = dict(
         a=1,
         b=2,
         c=3)
     result = validator(data)
-    assert result == data
+    assert result == expected
 
 
 def test_nested_many_fail():
