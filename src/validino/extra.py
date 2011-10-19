@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Some validators commonly used in web applications.
 """

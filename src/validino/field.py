@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import validino.base as V
 
 class Field(object):

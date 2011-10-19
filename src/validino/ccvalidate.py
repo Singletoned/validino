@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 contains a function for validating credit card numbers.
 Supported card types are MasterCard, Visa, Amex, Diners Club,
