@@ -9,3 +9,10 @@ except ImportError:
             d.update(_kw)
             return func(*(args + _args), **d)
         return inner
+
+class ContextValidator(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, value, context):
+        return self.func(value, context)
