@@ -1,22 +1,32 @@
 # -*- coding: utf-8 -*-
 
+import py
+
 import validino as V
 from validino import util
 
 def test_ContextValidator():
-    def value_is_in_context(value, context):
-        if not value in context.values():
+    def _is_in_database(value, context):
+        if not value in context['database']:
             raise V.Invalid
         return True
 
-    wrapped_viic = util.ContextValidator(value_is_in_context)
+    is_in_database = util.ContextValidator(_is_in_database)
 
-    assert isinstance(wrapped_viic, util.ContextValidator)
-    context = dict(bar='foo')
-    assert wrapped_viic('foo', context)
+    assert isinstance(is_in_database, util.ContextValidator)
+    context = dict(database=['foo', 'bar', 'bum'])
+    assert is_in_database('foo', context)
 
-    foo_schema = V.Schema(dict(flibble=wrapped_viic))
+    with py.test.raises(V.Invalid) as e:
+        assert is_in_database('flooble', context)
+
+    foo_schema = V.Schema(dict(flibble=is_in_database))
     data = dict(flibble='foo')
-    context = dict(flibble='foo')
+    context = dict(database=['foo', 'bar', 'bum'])
     result = foo_schema(data, context)
     assert result
+
+    with py.test.raises(V.Invalid) as e:
+        data = dict(flibble='flansit')
+        context = dict(database=['foo', 'bar', 'bum'])
+        result = foo_schema(data, context)
