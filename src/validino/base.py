@@ -6,6 +6,8 @@ import time
 from uuid import UUID, uuid1
 import types
 
+from validino import util
+
 __all__ = [
     'Invalid',
     'check',
@@ -207,7 +209,9 @@ class Schema(object):
                 schemakeys.add(x)
         return schemakeys
 
-    def __call__(self, data):
+    def __call__(self, data, context=None):
+        if not context:
+            context = dict()
         if not self.filter_extra:
             result = data
         else:
@@ -235,7 +239,10 @@ class Schema(object):
             else:
                 vdata = result.get(k, data.get(k))
             try:
-                tmp = vfunc(vdata)
+                if isinstance(vfunc, util.ContextValidator):
+                    tmp = vfunc(vdata, context)
+                else:
+                    tmp = vfunc(vdata)
             except Invalid, e:
                 # if the exception specifies a field name,
                 # let that override the key in the validator

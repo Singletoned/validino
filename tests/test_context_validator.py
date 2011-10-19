@@ -14,3 +14,9 @@ def test_ContextValidator():
     assert isinstance(wrapped_viic, util.ContextValidator)
     context = dict(bar='foo')
     assert wrapped_viic('foo', context)
+
+    foo_schema = validino.Schema(dict(flibble=wrapped_viic))
+    data = dict(flibble='foo')
+    context = dict(flibble='foo')
+    result = foo_schema(data, context)
+    assert result
