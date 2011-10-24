@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uuid
+import uuid, datetime
 
 import py
 
@@ -489,11 +489,12 @@ def test_not_belongs():
 def test_parse_date():
     fmt = '%m %d %Y'
     msg = 'Gargantua and Pantagruel'
-    v = V.parse_datetime(fmt, msg)
+    v = V.parse_date(fmt, msg)
     dt = v('07 02 2007')
     assert dt.year == 2007
     assert dt.month == 7
     assert dt.day == 2
+    assert isinstance(dt, datetime.date)
 
 
 def test_parse_datetime():
@@ -504,6 +505,7 @@ def test_parse_datetime():
     assert dt.year == 2007
     assert dt.hour == 12
     assert dt.minute == 34
+    assert isinstance(dt, datetime.datetime)
 
 
 def test_parse_time():
