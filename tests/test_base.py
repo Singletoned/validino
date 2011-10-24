@@ -440,6 +440,15 @@ def test_not_equal():
 
 def test_integer():
     msg = "please enter an integer"
+    v = V.integer(msg=msg)
+    assert v(40) == 40
+    assert_invalid(
+        lambda: v('whack him until he screams'),
+        {None: msg})
+
+
+def test_to_integer():
+    msg = "please enter an integer"
     v = V.to_integer(msg=msg)
     assert v('40') == 40
     assert_invalid(
