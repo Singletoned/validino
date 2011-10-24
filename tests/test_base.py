@@ -147,19 +147,19 @@ def test_nested_many():
 
 
 def test_nested_many_fail():
-    schema = V.nested_many(
+    validator = V.nested_many(
         V.integer())
     data = dict(
         a=1,
         b="two",
         c=3)
     with py.test.raises(V.Invalid) as e:
-        result = schema(data)
+        result = validator(data)
     errors = e.value.unpack_errors()
     assert errors['b'] == "not an integer"
 
     with py.test.raises(V.Invalid) as e:
-        result = schema(None)
+        result = validator(None)
     errors = e.value.unpack_errors()
     assert errors == {None: "No data found"}
 
