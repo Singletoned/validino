@@ -698,9 +698,9 @@ def test_fields_equal():
 def test_excursion():
     x = 'gadzooks@wonko.com'
 
-    v = V.excursion(lambda x: x.split('@')[0],
-                  V.belongs(['gadzooks', 'willy'],
-                            msg='pancreatic'))
+    v = V.excursion(
+        lambda x: x.split('@')[0],
+        V.belongs(['gadzooks', 'willy'], msg='pancreatic'))
     assert x == v(x)
     assert_invalid(
         lambda: v('hieratic impulses'),
