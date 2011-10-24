@@ -294,33 +294,6 @@ def test_clamp_length():
         {None: 'kong'})
 
 
-def test_all_of_2():
-    messages = dict(integer='please enter an integer',
-                  belongs='invalid choice',
-                  min='too small',
-                  max='too big')
-    v = V.all_of(V.default(40),
-                V.strip,
-                V.to_integer(msg=messages),
-                V.belongs(range(4, 100, 4), messages),
-                V.clamp(min=20, max=50, msg=messages))
-    assert v(None) == 40
-    assert v('40') == 40
-    assert v('44  ') == 44
-    assert_invalid(
-        lambda: v(' prick '),
-        {None: messages['integer']})
-    assert_invalid(
-        lambda: v(' 41  '),
-        {None: messages['belongs']})
-    assert_invalid(
-        lambda: v('96'),
-        {None: messages['max']})
-    assert_invalid(
-        lambda: v('8'),
-        {None: messages['min']})
-
-
 def test_check():
     d = dict(x=5, y=100)
     def add_z(val):
@@ -401,6 +374,33 @@ def test_all_of():
     with py.test.raises(V.Invalid) as e:
         assert v('')
     assert e.value.unpack_errors() == {None: "bar"}
+
+
+def test_all_of_2():
+    messages = dict(integer='please enter an integer',
+                  belongs='invalid choice',
+                  min='too small',
+                  max='too big')
+    v = V.all_of(V.default(40),
+                V.strip,
+                V.to_integer(msg=messages),
+                V.belongs(range(4, 100, 4), messages),
+                V.clamp(min=20, max=50, msg=messages))
+    assert v(None) == 40
+    assert v('40') == 40
+    assert v('44  ') == 44
+    assert_invalid(
+        lambda: v(' prick '),
+        {None: messages['integer']})
+    assert_invalid(
+        lambda: v(' 41  '),
+        {None: messages['belongs']})
+    assert_invalid(
+        lambda: v('96'),
+        {None: messages['max']})
+    assert_invalid(
+        lambda: v('8'),
+        {None: messages['min']})
 
 
 def test_either():
