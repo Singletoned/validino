@@ -289,16 +289,6 @@ def test_to_boolean():
         yield do_test, v, False
 
 
-def test_to_boolean_without_coerce():
-    validator = V.to_boolean(coerce=False, msg="Is not boolean")
-    assert validator(True) == True
-    assert validator(False) == False
-    with py.test.raises(V.Invalid) as e:
-        validator("True")
-    errors = e.value.unpack_errors()
-    assert errors == {None:"Is not boolean"}
-
-
 def test_is_scalar():
     msg = 'sc'
     v = V.is_scalar(msg=msg)

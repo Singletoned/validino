@@ -605,7 +605,7 @@ def integer(msg=None):
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
-def to_boolean(coerce=True, msg=None):
+def to_boolean(msg=None):
     """
     Coerces the value to one of True or False
 
@@ -616,19 +616,9 @@ def to_boolean(coerce=True, msg=None):
     False
     >>> validator([])
     False
-    >>> validator = to_boolean(msg='Me no convert to boolean', coerce=False)
-    >>> validator('true')
-    Traceback (most recent call last):
-    ...
-    Invalid: ['Is not boolean']
     """
     def f(value, context=None):
-        if value in [True, False]:
-            return value
-        elif coerce:
-            return bool(value)
-        else:
-            raise Invalid(_msg(msg, 'to_boolean', 'not a boolean'))
+        return bool(value)
     return f
 
 def regex(pat, msg=None):
