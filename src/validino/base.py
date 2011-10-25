@@ -613,19 +613,28 @@ def integer(msg=None):
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
-def to_boolean(msg=None):
+def to_boolean(msg=None, fuzzy=False):
     """
-    Coerces the value to one of True or False
-
-    >>> validator = to_boolean(msg='Me no convert to boolean')
-    >>> validator('false')
+    Coerces the value to one of True or False.  If `fuzzy` is `True`
+    it checks whether the value is one of a set of reasonable truthy
+    strings, before coercion.
+    >>> to_boolean()('false')
     True
-    >>> validator(0)
+    >>> to_boolean(fuzzy=True)('false')
     False
-    >>> validator([])
+    >>> to_boolean()(0)
+    False
+    >>> to_boolean()([])
     False
     """
+    true_strings = ['true', 't', 'y', 'yes']
+    false_strings = ['false', 'f', 'n', 'no']
     def f(value, context=None):
+        if fuzzy and isinstance(value, basestring):
+            if value.lower() in true_strings:
+                return True
+            elif value.lower() in false_strings:
+                return False
         return bool(value)
     return f
 

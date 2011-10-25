@@ -281,8 +281,20 @@ def test_to_boolean():
     def do_test(v, t_or_f):
         assert validator(v) == t_or_f
         assert wrapped_v(v) == t_or_f
-    true_values = [True, 'True', 'False', 'true', 'None', 1, object()]
+    true_values = [True, 'True', 'False', 'true', 'None', 1, object(), [False], 'f', 'no']
     false_values = [False, '', [], {}, 0, None]
+    for v in true_values:
+        yield do_test, v, True
+    for v in false_values:
+        yield do_test, v, False
+
+
+def test_to_boolean_fuzzy():
+    validator = V.to_boolean(fuzzy=True)
+    def do_test(v, t_or_f):
+        assert validator(v) == t_or_f
+    true_values = [True, 'True', 'true', 'None', 1, object(), [False], 't', 'y', 'yes']
+    false_values = [False, '', [], {}, 0, None, 'False', 'n', 'NO']
     for v in true_values:
         yield do_test, v, True
     for v in false_values:
