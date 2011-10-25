@@ -48,3 +48,10 @@ def test_ContextValidator():
     assert errors == {
         None: "Problems were found in the submitted data.",
         'flibble': "it's not in the database"}
+
+    validator = V.util.context_validator(V.nested)(
+        flim=is_in_database('doodah'))
+    data = dict(flim='foo')
+    context = dict(database=['foo', 'bar', 'bum'])
+    result = validator(data, context)
+    assert result == dict(flim=True)

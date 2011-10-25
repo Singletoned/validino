@@ -24,5 +24,5 @@ class ContextValidator(object):
     def __init__(self, func):
         self.func = func
 
-    def __call__(self, value, context):
+    def __call__(self, value, context=None):
         return self.func(value, context)
