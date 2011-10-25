@@ -410,8 +410,8 @@ def either(*validators):
     exceptions they raise, and returns the result of the first one
     that works.  If none work, the last exception caught is re-raised.
     """
-    last_exception = None
     def f(value, context=None):
+        last_exception = None
         for v in validators:
             try:
                 value = v(value)
