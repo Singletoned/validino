@@ -51,6 +51,7 @@ def test_Invalid_unpack_errors():
     result = error.unpack_errors()
     assert expected == result
 
+
 def test_Schema_errors():
     schema = V.Schema(
         dict(
@@ -64,6 +65,7 @@ def test_Schema_errors():
         schema(data)
     result = e.value.errors
     assert expected == result
+
 
 def test_nested_schema():
     nested_validators = dict(
@@ -122,7 +124,6 @@ def test_nested_missing():
         flam="key 'flam' is missing",
         flim="key 'flim' is missing")
 
-
     validator = V.util.context_validator(V.nested)(
         flim=V.util.context_validator(
             V.to_unicode)(),
@@ -134,6 +135,7 @@ def test_nested_missing():
         validator(data)
     errors = e.value.unpack_errors()
     assert errors == dict(flam="key 'flam' is missing")
+
 
 def test_nested_with_bad_data():
     validator = V.nested(
@@ -195,6 +197,7 @@ def test_nested_many():
     result = validator(data, context=['flibble', 'flamble', 'flooble'])
     assert result == expected
 
+
 def test_nested_many_fail():
     validator = V.nested_many(
         V.integer())
@@ -227,6 +230,7 @@ def test_nested_many_fail():
         result = validator(None)
     errors = e.value.unpack_errors()
     assert errors == {None: "No data found"}
+
 
 def test_nested_many_fail_nested_errors():
     schema = V.Schema(
@@ -315,6 +319,7 @@ def test_is_scalar():
         lambda: v([40]),
         {None: msg})
 
+
 def test_is_list():
     msg = "list"
     v = V.is_list(msg=msg)
@@ -339,6 +344,7 @@ def test_to_scalar():
     v = V.util.context_validator(V.to_scalar)()
     assert v([40]) == 40
 
+
 def test_to_list():
     v = V.to_list()
     assert v(['a', 'b']) == ['a', 'b']
@@ -346,6 +352,7 @@ def test_to_list():
 
     v = V.util.context_validator(V.to_list)()
     assert v(['a', 'b']) == ['a', 'b']
+
 
 def test_clamp():
     msg = 'You are a pear'
@@ -371,6 +378,7 @@ def test_clamp():
     assert_invalid(
         lambda: v(20),
         {None: msg})
+
 
 def test_clamp_length():
     msg = 'You are a pear'
@@ -418,6 +426,7 @@ def test_check():
     result = validator(d, context=[dict(x=5, y=100)])
     assert result is d
     assert d['z'] == 300
+
 
 def test_default():
     v = V.default("pong")
@@ -485,6 +494,7 @@ def test_uuid():
 
     v = V.util.context_validator(V.uuid)(msg=msg)
     assert v(guid) == str(guid)
+
 
 def test_all_of():
     v = V.all_of(V.to_string('foo'), V.not_empty('bar'))
@@ -921,6 +931,7 @@ def test_excursion():
     assert result == set(['bar'])
     assert data == set(['bar', 'foo'])
 
+
 def test_confirm_type():
     v = V.confirm_type((int, float), 'not a number')
     assert v(45) == 45
@@ -1056,6 +1067,7 @@ def test_unpack_3():
     assert set(u3) == set(('frog', 'dog', 'insect'))
     for k, v in u3.iteritems():
         assert isinstance(v, basestring)
+
 
 def test_errors():
     schema = V.Schema(

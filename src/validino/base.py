@@ -65,6 +65,7 @@ def _add_error_message(d, k, msg):
     if msg not in d[k]:
         d[k].append(msg)
 
+
 def _msg(msg, key, default):
     """
     internal message-handling routine.
@@ -76,6 +77,7 @@ def _msg(msg, key, default):
             return default
         else:
             return msg
+
 
 def dict_nest(data, separator='.'):
     """
@@ -91,6 +93,7 @@ def dict_nest(data, separator='.'):
             d = d[k1]
         d[levels[-1]] = data[k]
     return res
+
 
 def dict_unnest(data, separator='.'):
     """
@@ -278,6 +281,7 @@ def confirm_type(typespec, msg=None):
         raise Invalid(_msg(msg, "confirm_type", "unexpected type"))
     return f
 
+
 def translate(mapping, msg=None):
     def f(value, context=None):
         try:
@@ -286,6 +290,7 @@ def translate(mapping, msg=None):
             raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
+
 def is_unicode(msg=None):
     def f(value, context=None):
         if isinstance(value, unicode):
@@ -293,6 +298,7 @@ def is_unicode(msg=None):
         else:
             raise Invalid(_msg(msg, 'is_unicode', 'not unicode'))
     return f
+
 
 def to_unicode(encoding='utf8', errors='strict', msg=None):
     def f(value, context=None):
@@ -336,6 +342,7 @@ def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
                 raise Invalid(_msg(msg, 'to_string', 'encoding error'))
     return f
 
+
 def is_scalar(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a scalar.
@@ -346,6 +353,7 @@ def is_scalar(msg=None, listtypes=(list,)):
         return value
     return f
 
+
 def is_list(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a list.
@@ -355,6 +363,7 @@ def is_list(msg=None, listtypes=(list,)):
             raise Invalid(_msg(msg, "is_list", "expected list value"))
         return value
     return f
+
 
 def to_scalar(listtypes=(list,)):
     """
@@ -369,6 +378,7 @@ def to_scalar(listtypes=(list,)):
         return value
     return f
 
+
 def to_list(listtypes=(list,)):
     """
     if the value is a scalar, wrap it in a list.
@@ -382,6 +392,7 @@ def to_list(listtypes=(list,)):
         return value
     return f
 
+
 def default(defaultValue):
     """
     if the value is None, return defaultValue instead.
@@ -394,6 +405,7 @@ def default(defaultValue):
         return value
     return f
 
+
 def all_of(*validators):
     """
     Applies each of a series of validators in turn, passing the return
@@ -404,6 +416,7 @@ def all_of(*validators):
             value = v(value, context=context)
         return value
     return f
+
 
 def either(*validators):
     """
@@ -423,6 +436,7 @@ def either(*validators):
         raise last_exception
     return f
 
+
 def check(*validators):
     """
     Returns a function that runs each of a series of validators
@@ -435,6 +449,7 @@ def check(*validators):
             v(value, context=context)
         return value
     return f
+
 
 def excursion(*validators):
     """
@@ -449,12 +464,14 @@ def excursion(*validators):
         return return_value
     return f
 
+
 def equal(val, msg=None):
     def f(value, context=None):
         if value == val:
             return value
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
     return f
+
 
 def not_equal(val, msg=None):
     def f(value, context=None):
@@ -463,6 +480,7 @@ def not_equal(val, msg=None):
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
     return f
 
+
 def empty(msg=None):
     def f(value, context=None):
         if value == '' or value is None:
@@ -470,12 +488,14 @@ def empty(msg=None):
         raise Invalid(_msg(msg, "empty", "No value was expected"))
     return f
 
+
 def not_empty(msg=None):
     def f(value, context=None):
         if value != '' and value != None:
             return value
         raise Invalid(_msg(msg, 'notempty', "A non-empty value was expected"))
     return f
+
 
 def strip(value, context=None):
     """
@@ -487,6 +507,7 @@ def strip(value, context=None):
         return value.strip()
     except AttributeError:
         return value
+
 
 def clamp(min=None, max=None, msg=None):
     """
@@ -500,6 +521,7 @@ def clamp(min=None, max=None, msg=None):
             raise Invalid(_msg(msg, "max", "value above maximum"))
         return value
     return f
+
 
 def clamp_length(min=None, max=None, msg=None):
     """
@@ -515,6 +537,7 @@ def clamp_length(min=None, max=None, msg=None):
         return value
     return f
 
+
 def belongs(domain, msg=None):
     """
     ensures that the value belongs to the domain
@@ -526,6 +549,7 @@ def belongs(domain, msg=None):
         raise Invalid(_msg(msg, "belongs", "invalid choice"))
     return f
 
+
 def not_belongs(domain, msg=None):
     """
     ensures that the value does not belong to the domain
@@ -536,6 +560,7 @@ def not_belongs(domain, msg=None):
             return value
         raise Invalid(_msg(msg, "not_belongs", "invalid choice"))
     return f
+
 
 def parse_time(format, msg=None):
     """
@@ -550,6 +575,7 @@ def parse_time(format, msg=None):
             raise Invalid(_msg(msg, 'parse_time', "invalid time"))
     return f
 
+
 def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
@@ -559,6 +585,7 @@ def parse_date(format, msg=None):
         return datetime.date(*v[:3])
     return f
 
+
 def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
@@ -567,6 +594,7 @@ def parse_datetime(format, msg=None):
         v = parse_time(format, msg)(value)
         return datetime.datetime(*v[:6])
     return f
+
 
 def uuid(msg=None, default=False):
     """
@@ -582,6 +610,7 @@ def uuid(msg=None, default=False):
                 raise Invalid(_msg(msg, "uuid", "invalid uuid"))
         return v
     return f
+
 
 def to_integer(msg=None):
     """
@@ -602,6 +631,7 @@ def to_integer(msg=None):
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
 
+
 def integer(msg=None):
     """
     Tests whether the value in an integer
@@ -612,6 +642,7 @@ def integer(msg=None):
         else:
             raise Invalid(_msg(msg, "integer", "not an integer"))
     return f
+
 
 def to_boolean(msg=None, fuzzy=False):
     """
@@ -638,6 +669,7 @@ def to_boolean(msg=None, fuzzy=False):
         return bool(value)
     return f
 
+
 def regex(pat, msg=None):
     """
     tests the value against the given regex pattern
@@ -650,6 +682,7 @@ def regex(pat, msg=None):
         return value
     return f
 
+
 def regex_sub(pat, sub):
     """
     performs regex substitution on the input value.
@@ -657,6 +690,7 @@ def regex_sub(pat, sub):
     def f(value, context=None):
         return re.sub(pat, sub, value)
     return f
+
 
 def fields_equal(msg=None, field=_default):
     """
@@ -673,6 +707,7 @@ def fields_equal(msg=None, field=_default):
         return values
     return f
 
+
 def fields_match(name1, name2, msg=None, field=_default):
     """
     verifies that the values associated with the keys 'name1' and
@@ -687,6 +722,7 @@ def fields_match(name1, name2, msg=None, field=_default):
                 raise Invalid({field: m})
         return value
     return f
+
 
 def nested(**kwargs):
     """
@@ -709,6 +745,7 @@ def nested(**kwargs):
         return data
     return f
 
+
 def nested_many(sub_validator):
     """
     Applies the validator to each of the values
@@ -729,6 +766,7 @@ def nested_many(sub_validator):
         else:
             raise Invalid("No data found")
     return f
+
 
 def only_one_of(msg=None, field=None):
     """
