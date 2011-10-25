@@ -610,7 +610,7 @@ def to_boolean(msg=None):
     Coerces the value to one of True or False
 
     >>> validator = to_boolean(msg='Me no convert to boolean')
-    >>> validator('true')
+    >>> validator('false')
     True
     >>> validator(0)
     False
