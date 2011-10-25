@@ -271,14 +271,14 @@ class Schema(object):
 
 
 def confirm_type(typespec, msg=None):
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, typespec):
             return value
         raise Invalid(_msg(msg, "confirm_type", "unexpected type"))
     return f
 
 def translate(mapping, msg=None):
-    def f(value):
+    def f(value, context=None):
         try:
             return mapping[value]
         except KeyError:
@@ -286,7 +286,7 @@ def translate(mapping, msg=None):
     return f
 
 def is_unicode(msg=None):
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, unicode):
             return value
         else:
@@ -294,7 +294,7 @@ def is_unicode(msg=None):
     return f
 
 def to_unicode(encoding='utf8', errors='strict', msg=None):
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, unicode):
             return value
         elif value is None:
@@ -310,7 +310,7 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
 
 
 def is_string(msg=None):
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, str):
             return value
         else:
@@ -319,7 +319,7 @@ def is_string(msg=None):
 
 
 def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, str):
             return value
         elif not coerce:
@@ -339,7 +339,7 @@ def is_scalar(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a scalar.
     """
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, listtypes):
             raise Invalid(_msg(msg, 'is_scalar', 'expected scalar value'))
         return value
@@ -349,7 +349,7 @@ def is_list(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a list.
     """
-    def f(value):
+    def f(value, context=None):
         if not isinstance(value, listtypes):
             raise Invalid(_msg(msg, "is_list", "expected list value"))
         return value
@@ -362,7 +362,7 @@ def to_scalar(listtypes=(list,)):
 
     This raises no exceptions.
     """
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, listtypes):
             return value[0]
         return value
@@ -375,7 +375,7 @@ def to_list(listtypes=(list,)):
 
     This raises no exceptions.
     """
-    def f(value):
+    def f(value, context=None):
         if not isinstance(value, listtypes):
             return [value]
         return value
@@ -387,7 +387,7 @@ def default(defaultValue):
 
     This raises no exceptions.
     """
-    def f(value):
+    def f(value, context=None):
         if value is None:
             return defaultValue
         return value
@@ -398,9 +398,9 @@ def all_of(*validators):
     Applies each of a series of validators in turn, passing the return
     value of each to the next.
     """
-    def f(value):
+    def f(value, context=None):
         for v in validators:
-            value = v(value)
+            value = v(value, context=context)
         return value
     return f
 
@@ -411,7 +411,7 @@ def either(*validators):
     that works.  If none work, the last exception caught is re-raised.
     """
     last_exception = None
-    def f(value):
+    def f(value, context=None):
         for v in validators:
             try:
                 value = v(value)
@@ -429,9 +429,9 @@ def check(*validators):
     ignoring the validators return value.  The function returns the
     original input data (which, if it mutable, may have been changed).
     """
-    def f(value):
+    def f(value, context=None):
         for v in validators:
-            v(value)
+            v(value, context=context)
         return value
     return f
 
@@ -442,40 +442,40 @@ def excursion(*validators):
     data survives validation, you carry on from the point the
     excursion started.
     """
-    def f(value):
+    def f(value, context=None):
         all_of(*validators)(value)
         return value
     return f
 
 def equal(val, msg=None):
-    def f(value):
+    def f(value, context=None):
         if value == val:
             return value
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
     return f
 
 def not_equal(val, msg=None):
-    def f(value):
+    def f(value, context=None):
         if value != val:
             return value
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
     return f
 
 def empty(msg=None):
-    def f(value):
+    def f(value, context=None):
         if value == '' or value is None:
             return value
         raise Invalid(_msg(msg, "empty", "No value was expected"))
     return f
 
 def not_empty(msg=None):
-    def f(value):
+    def f(value, context=None):
         if value != '' and value != None:
             return value
         raise Invalid(_msg(msg, 'notempty', "A non-empty value was expected"))
     return f
 
-def strip(value):
+def strip(value, context=None):
     """
     For string/unicode input, strips the value to remove pre- or
     postpended whitespace.  For other values, does nothing; raises no
@@ -491,7 +491,7 @@ def clamp(min=None, max=None, msg=None):
     clamp a value between minimum and maximum values (either
     of which are optional).
     """
-    def f(value):
+    def f(value, context=None):
         if min is not None and value < min:
             raise Invalid(_msg(msg, "min", "value below minimum"))
         if max is not None and value > max:
@@ -504,7 +504,7 @@ def clamp_length(min=None, max=None, msg=None):
     clamp a value between minimum and maximum lengths (either
     of which are optional).
     """
-    def f(value):
+    def f(value, context=None):
         vlen = len(value)
         if min is not None and vlen < min:
             raise Invalid(_msg(msg, "minlen", "too short"))
@@ -518,7 +518,7 @@ def belongs(domain, msg=None):
     ensures that the value belongs to the domain
     specified.
     """
-    def f(value):
+    def f(value, context=None):
         if value in domain:
             return value
         raise Invalid(_msg(msg, "belongs", "invalid choice"))
@@ -529,7 +529,7 @@ def not_belongs(domain, msg=None):
     ensures that the value does not belong to the domain
     specified.
     """
-    def f(value):
+    def f(value, context=None):
         if value not in domain:
             return value
         raise Invalid(_msg(msg, "not_belongs", "invalid choice"))
@@ -541,7 +541,7 @@ def parse_time(format, msg=None):
     the given format, returning a timetuple,
     or raises an Invalid exception.
     """
-    def f(value):
+    def f(value, context=None):
         try:
             return time.strptime(value, format)
         except ValueError:
@@ -552,7 +552,7 @@ def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
     """
-    def f(value):
+    def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.date(*v[:3])
     return f
@@ -561,7 +561,7 @@ def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
     """
-    def f(value):
+    def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.datetime(*v[:6])
     return f
@@ -570,7 +570,7 @@ def uuid(msg=None, default=False):
     """
     Accepts any value that can be converted to a uuid
     """
-    def f(value):
+    def f(value, context=None):
         try:
             v = str(UUID(str(value)))
         except ValueError:
@@ -585,7 +585,7 @@ def to_integer(msg=None):
     """
     attempts to coerce the value into an integer.
     """
-    def f(value):
+    def f(value, context=None):
         try:
             return int(value)
         except (TypeError, ValueError):
@@ -596,7 +596,7 @@ def integer(msg=None):
     """
     Tests whether the value in an integer
     """
-    def f(value):
+    def f(value, context=None):
         if isinstance(value, int):
             return value
         else:
@@ -620,7 +620,7 @@ def to_boolean(coerce=True, msg=None):
     ...
     Invalid: ['Is not boolean']
     """
-    def f(value):
+    def f(value, context=None):
         if value in [True, False]:
             return value
         elif coerce:
@@ -634,7 +634,7 @@ def regex(pat, msg=None):
     tests the value against the given regex pattern
     and raises Invalid if it doesn't match.
     """
-    def f(value):
+    def f(value, context=None):
         m = re.match(pat, value)
         if not m:
             raise Invalid(_msg(msg, 'regex', "does not match pattern"))
@@ -645,7 +645,7 @@ def regex_sub(pat, sub):
     """
     performs regex substitution on the input value.
     """
-    def f(value):
+    def f(value, context=None):
         return re.sub(pat, sub, value)
     return f
 
@@ -654,7 +654,7 @@ def fields_equal(msg=None, field=_default):
     when passed a collection of values,
     verifies that they are all equal.
     """
-    def f(values):
+    def f(values, context=None):
         if len(set(values)) != 1:
             m = _msg(msg, 'fields_equal', "fields not equal")
             if field is _default:
@@ -669,7 +669,7 @@ def fields_match(name1, name2, msg=None, field=_default):
     verifies that the values associated with the keys 'name1' and
     'name2' in value (which must be a dict) are identical.
     """
-    def f(value):
+    def f(value, context=None):
         if value[name1] != value[name2]:
             m = _msg(msg, 'fields_match', 'fields do not match')
             if field is _default:
@@ -683,14 +683,14 @@ def nested(**kwargs):
     """
     Behaves like a dict.  It's keys are names, it's values are validators
     """
-    def f(value):
+    def f(value, context=None):
         data = dict()
         errors = dict()
         for k, v in kwargs.items():
             if isinstance(v, tuple):
                 v = all_of(*v)
             try:
-                data[k] = v(value[k])
+                data[k] = v(value[k], context=context)
             except (KeyError, TypeError):
                 errors[k] = "key %r is missing" % k
             except Invalid, e:
@@ -704,13 +704,13 @@ def nested_many(sub_validator):
     """
     Applies the validator to each of the values
     """
-    def f(value):
+    def f(value, context=None):
         data = dict()
         errors = dict()
         if value:
             for k, v in value.items():
                 try:
-                    data[k] = sub_validator(v)
+                    data[k] = sub_validator(v, context=context)
                 except Invalid, e:
                     errors[k] = e
             if errors:
@@ -725,7 +725,7 @@ def only_one_of(msg=None, field=None):
     """
     Check that only one of the given values is True.
     """
-    def f(values):
+    def f(values, context=None):
         if sum([int(bool(val)) for val in values]) > 1:
             m = _msg(msg, 'only_one_of', 'more than one value present')
             if field is not None:
