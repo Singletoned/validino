@@ -585,7 +585,15 @@ def uuid(msg=None, default=False):
 
 def to_integer(msg=None):
     """
-    attempts to coerce the value into an integer.
+    Attempts to coerce the value to an integer.
+
+    >>> validator = to_integer(msg='me no convert')
+    >>> validator('1')
+    1
+    >>> validator('two')
+    Traceback (most recent call last):
+    ...
+    Invalid: {None: 'me no convert'}
     """
     def f(value, context=None):
         try:
