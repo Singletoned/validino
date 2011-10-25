@@ -913,6 +913,12 @@ def test_excursion():
         V.belongs(['gadzooks', 'willy'], msg='pancreatic'))
     assert x == v(x)
 
+    v = V.excursion(lambda x, context: x.add('foo'))
+    data = set(['bar'])
+    result = v(data)
+    assert result == set(['bar'])
+    assert data == set(['bar', 'foo'])
+
 def test_confirm_type():
     v = V.confirm_type((int, float), 'not a number')
     assert v(45) == 45

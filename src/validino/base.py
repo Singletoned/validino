@@ -5,6 +5,7 @@ import re
 import time
 from uuid import UUID, uuid1
 import types
+import copy
 
 from validino import util
 
@@ -439,12 +440,13 @@ def excursion(*validators):
     """
     perform a series of validations that may break down the data
     passed in into a form that you don't deserve to retain; if the
-    data survives validation, you carry on from the point the
-    excursion started.
+    data survives validation, you get a copy of the data from the
+    point the excursion started.
     """
     def f(value, context=None):
+        return_value = copy.copy(value)
         all_of(*validators)(value)
-        return value
+        return return_value
     return f
 
 def equal(val, msg=None):
