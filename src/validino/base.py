@@ -116,7 +116,7 @@ def dict_unnest(data, separator='.'):
 
 
 class Invalid(Exception):
-    """"""
+    """A general Exception for things that are Invalid"""
     def __init__(self, errors=None, field=_default):
         if not errors:
             errors = dict()
