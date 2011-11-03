@@ -250,12 +250,6 @@ class Schema(object):
                 # dictionary
                 name = getattr(e, 'field', k)
                 exceptions[name] = e._unpack_errors()
-            except Exception, e:
-                # if the exception specifies a field name,
-                # let that override the key in the validator
-                # dictionary
-                name = getattr(e, 'field', k)
-                exceptions[name] = e
             else:
                 if have_plural:
                     result.update(dict(zip(k, tmp)))
