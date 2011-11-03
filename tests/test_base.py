@@ -9,10 +9,8 @@ from validino.util import partial
 from util import assert_invalid
 
 
-@V.util.context_validator
 def is_in_context():
     def f(value, context):
-        print value
         assert value in context
         return value
     return f
@@ -95,9 +93,8 @@ def test_nested():
         flam=V.to_unicode())
     assert validator(data) == expected
 
-    validator = V.util.context_validator(V.nested)(
-        flim=V.util.context_validator(
-            V.to_unicode)(),
+    validator = V.nested(
+        flim=V.to_unicode(),
         flam=V.all_of(
             V.to_unicode(),
             is_in_context()))
@@ -124,9 +121,8 @@ def test_nested_missing():
         flam="key 'flam' is missing",
         flim="key 'flim' is missing")
 
-    validator = V.util.context_validator(V.nested)(
-        flim=V.util.context_validator(
-            V.to_unicode)(),
+    validator = V.nested(
+        flim=V.to_unicode(),
         flam=V.all_of(
             V.to_unicode(),
             is_in_context()))
@@ -177,14 +173,7 @@ def test_nested_many():
     result = validator(data)
     assert result == expected
 
-    validator = V.util.context_validator(V.nested_many)(
-        V.util.context_validator(
-            V.to_integer)())
-
-    result = validator(data)
-    assert result == expected
-
-    validator = V.util.context_validator(V.nested_many)(
+    validator = V.nested_many(
         is_in_context())
     data = dict(
         a="flibble",
@@ -205,21 +194,6 @@ def test_nested_many_fail():
         a=1,
         b="two",
         c=3)
-
-    with py.test.raises(V.Invalid) as e:
-        result = validator(data)
-    errors = e.value.unpack_errors()
-    assert errors['b'] == "not an integer"
-
-    with py.test.raises(V.Invalid) as e:
-        result = validator(None)
-    errors = e.value.unpack_errors()
-    assert errors == {None: "No data found"}
-
-    validator = V.util.context_validator(
-        V.nested_many(
-            V.util.context_validator(
-                V.integer())))
 
     with py.test.raises(V.Invalid) as e:
         result = validator(data)
@@ -275,16 +249,11 @@ def test_only_one_of():
         "field1": "Please only choose one value"}
     assert expected == errors
 
-    v = V.util.context_validator(V.only_one_of)(msg="Please only choose one value")
-    assert v((0, 1)) == (0, 1)
-
 
 def test_to_boolean():
     validator = V.to_boolean()
-    wrapped_v = V.util.context_validator(V.to_boolean)()
     def do_test(v, t_or_f):
         assert validator(v) == t_or_f
-        assert wrapped_v(v) == t_or_f
     true_values = [True, 'True', 'False', 'true', 'None', 1, object(), [False], 'f', 'no']
     false_values = [False, '', [], {}, 0, None]
     for v in true_values:
@@ -313,22 +282,10 @@ def test_is_scalar():
         lambda: v([40]),
         {None: msg})
 
-    v = V.util.context_validator(V.is_scalar)(msg=msg)
-    assert v(40) == 40
-    assert_invalid(
-        lambda: v([40]),
-        {None: msg})
-
 
 def test_is_list():
     msg = "list"
     v = V.is_list(msg=msg)
-    assert v([40]) == [40]
-    assert_invalid(
-        lambda: v(40),
-        {None: msg})
-
-    v = V.util.context_validator(V.is_list)(msg=msg)
     assert v([40]) == [40]
     assert_invalid(
         lambda: v(40),
@@ -341,17 +298,11 @@ def test_to_scalar():
     assert v(40) == 40
     assert v(range(40)) == 0
 
-    v = V.util.context_validator(V.to_scalar)()
-    assert v([40]) == 40
-
 
 def test_to_list():
     v = V.to_list()
     assert v(['a', 'b']) == ['a', 'b']
     assert v('a') == ['a']
-
-    v = V.util.context_validator(V.to_list)()
-    assert v(['a', 'b']) == ['a', 'b']
 
 
 def test_clamp():
@@ -373,12 +324,6 @@ def test_clamp():
         lambda: v(120),
         {None: 'value above maximum'})
 
-    v = V.util.context_validator(V.clamp)(min=30, msg=msg)
-    assert v(50) == 50
-    assert_invalid(
-        lambda: v(20),
-        {None: msg})
-
 
 def test_clamp_length():
     msg = 'You are a pear'
@@ -393,13 +338,6 @@ def test_clamp_length():
         lambda: v('I told you that Ronald would eat it when you were in the bathroom'),
         {None: 'kong'})
 
-    msg = 'You are a pear'
-    v = V.util.context_validator(V.clamp_length)(min=3, msg=msg)
-    assert v('500') == '500'
-    assert_invalid(
-        lambda: v('eh'),
-        {None: msg})
-
 
 def test_check():
     d = dict(x=5, y=100)
@@ -410,12 +348,6 @@ def test_check():
             raise V.Invalid("wrong size")
     d2 = V.check(add_z, partial(len_d, size=3))(d)
     assert d2 is d
-    assert d['z'] == 300
-
-    d = dict(x=5, y=100)
-    validator = V.util.context_validator(V.check)(add_z, partial(len_d, size=3))
-    result = validator(d)
-    assert result is d
     assert d['z'] == 300
 
     d = dict(x=5, y=100)
@@ -431,9 +363,6 @@ def test_check():
 def test_default():
     v = V.default("pong")
     assert v(None) == 'pong'
-
-    validator = V.util.context_validator(V.default)("pang")
-    assert validator(None) == 'pang'
 
 
 def test_dict_nest():
@@ -492,9 +421,6 @@ def test_uuid():
     with py.test.raises(V.Invalid) as e:
         assert v('hullo')
 
-    v = V.util.context_validator(V.uuid)(msg=msg)
-    assert v(guid) == str(guid)
-
 
 def test_all_of():
     v = V.all_of(V.to_string('foo'), V.not_empty('bar'))
@@ -503,17 +429,7 @@ def test_all_of():
         assert v('')
     assert e.value.unpack_errors() == {None: "bar"}
 
-    v = V.util.context_validator(V.all_of)(
-        V.to_string('foo'),
-        V.not_empty('bar'))
-    assert v('bob') == 'bob'
-
-    v = V.util.context_validator(V.all_of)(
-        V.util.context_validator(V.to_string)('foo'),
-        V.not_empty('bar'))
-    assert v('bob') == 'bob'
-
-    v = V.util.context_validator(V.all_of)(
+    v = V.all_of(
         is_in_context(),
         V.not_empty('bar'))
     assert v('bob', context=dict(bob=1)) == 'bob'
@@ -555,13 +471,7 @@ def test_either():
         lambda: v('bonk'),
         {None: msg})
 
-    v = V.util.context_validator(V.either)(
-        V.empty(),
-        V.to_integer(msg=msg))
-    assert v('40') == 40
-    assert v('') == ''
-
-    v = V.util.context_validator(V.either)(
+    v = V.either(
         is_in_context(),
         V.to_integer(msg=msg))
     assert v('40') == 40
@@ -576,10 +486,6 @@ def test_empty():
         lambda: v("bob"),
         {None: 'scorch me'})
 
-    v = V.util.context_validator(V.empty)(msg="scorch me")
-    assert v('') == ''
-    assert v(None) == None
-
 
 def test_equal():
     v = V.equal('egg', msg="not equal")
@@ -588,9 +494,6 @@ def test_equal():
         lambda: v('bob'),
         {None: 'not equal'})
 
-    v = V.util.context_validator(V.equal)('egg', msg="not equal")
-    assert v('egg') == 'egg'
-
 
 def test_not_equal():
     v = V.not_equal('egg', msg='equal')
@@ -598,9 +501,6 @@ def test_not_equal():
     assert_invalid(
         lambda: v('egg'),
         {None: 'equal'})
-
-    v = V.util.context_validator(V.not_equal)('egg', msg='equal')
-    assert v('plop') == 'plop'
 
 
 def test_integer():
@@ -611,9 +511,6 @@ def test_integer():
         lambda: v('whack him until he screams'),
         {None: msg})
 
-    v = V.util.context_validator(V.integer)(msg=msg)
-    assert v(40) == 40
-
 
 def test_to_integer():
     msg = "please enter an integer"
@@ -622,9 +519,6 @@ def test_to_integer():
     assert_invalid(
         lambda: v('whack him until he screams'),
         {None: msg})
-
-    v = V.util.context_validator(V.to_integer)(msg=msg)
-    assert v('40') == 40
 
 
 def test_not_empty():
@@ -638,9 +532,6 @@ def test_not_empty():
         lambda: v(None),
         {None: msg})
 
-    v = V.util.context_validator(V.not_empty)(msg=msg)
-    assert v("frog") == 'frog'
-
 
 def test_belongs():
     msg = "rinse me a robot"
@@ -649,10 +540,6 @@ def test_belongs():
     assert_invalid(
         lambda: v('snot'),
         {None: msg})
-
-    v = V.util.context_validator(
-        V.belongs)('pinko widget frog lump'.split(), msg=msg)
-    assert v('pinko') == 'pinko'
 
 
 def test_not_belongs():
@@ -663,21 +550,11 @@ def test_not_belongs():
         lambda: v(4),
         {None: msg})
 
-    v = V.util.context_validator(V.not_belongs)(range(5), msg=msg)
-    assert v('pinko') == 'pinko'
-
 
 def test_parse_date():
     fmt = '%m %d %Y'
     msg = 'Gargantua and Pantagruel'
     v = V.parse_date(fmt, msg)
-    dt = v('07 02 2007')
-    assert dt.year == 2007
-    assert dt.month == 7
-    assert dt.day == 2
-    assert isinstance(dt, datetime.date)
-
-    v = V.util.context_validator(V.parse_date)(fmt, msg)
     dt = v('07 02 2007')
     assert dt.year == 2007
     assert dt.month == 7
@@ -695,13 +572,6 @@ def test_parse_datetime():
     assert dt.minute == 34
     assert isinstance(dt, datetime.datetime)
 
-    v = V.util.context_validator(V.parse_datetime)(fmt, msg)
-    dt = v('07 02 2007 12:34')
-    assert dt.year == 2007
-    assert dt.hour == 12
-    assert dt.minute == 34
-    assert isinstance(dt, datetime.datetime)
-
 
 def test_parse_time():
     fmt = '%m %d %Y'
@@ -713,10 +583,6 @@ def test_parse_time():
         lambda: v('tough nuggie'),
         {None: msg})
 
-    v = V.util.context_validator(V.parse_time)(fmt, msg)
-    ts = v('10 03 2007')[:3]
-    assert ts == (2007, 10, 3)
-
 
 def test_regex():
     v = V.regex('shrubbery\d{3}$', 'regex')
@@ -725,16 +591,9 @@ def test_regex():
         lambda: v('buy a shrubbery333, ok?'),
         {None: 'regex'})
 
-    v = V.util.context_validator(V.regex)('shrubbery\d{3}$', 'regex')
-    assert v('shrubbery222') == 'shrubbery222'
-
 
 def test_regex_sub():
     v = V.regex_sub('shrubbery', 'potted plant')
-    res = v('a shrubbery would be nice')
-    assert res == 'a potted plant would be nice'
-
-    v = V.util.context_validator(V.regex_sub)('shrubbery', 'potted plant')
     res = v('a shrubbery would be nice')
     assert res == 'a potted plant would be nice'
 
@@ -875,10 +734,6 @@ def test_fields_match():
         v(dict(foo=1, bar=2))
     assert e.value.unpack_errors() == {None: 'flibble'}
 
-    v = V.util.context_validator(V.fields_match)(
-        'foo', 'goo', msg='flibble', field=None)
-    assert d == v(d)
-
 
 def test_fields_equal():
     values = ("pong", "pong")
@@ -904,10 +759,6 @@ def test_fields_equal():
     errors = e.value.unpack_errors()
     assert errors == {None: u"foo and bar don't match"}
 
-    values = ("pong", "pong")
-    v = V.util.context_validator(V.fields_equal)()
-    assert v(values) == values
-
 
 def test_excursion():
     x = 'gadzooks@wonko.com'
@@ -919,11 +770,6 @@ def test_excursion():
     assert_invalid(
         lambda: v('hieratic impulses'),
         {None: 'pancreatic'})
-
-    v = V.util.context_validator(V.excursion)(
-        lambda x, context: x.split('@')[0],
-        V.belongs(['gadzooks', 'willy'], msg='pancreatic'))
-    assert x == v(x)
 
     v = V.excursion(lambda x, context: x.add('foo'))
     data = set(['bar'])
@@ -939,9 +785,6 @@ def test_confirm_type():
         lambda: v('45'),
         {None: 'not a number'})
 
-    v = V.util.context_validator(V.confirm_type)((int, float), 'not a number')
-    assert v(45) == 45
-
 
 def test_translate():
     v = V.translate(dict(y=True, f=False),  'dong')
@@ -949,9 +792,6 @@ def test_translate():
     assert_invalid(
         lambda: v('pod'),
         {None: 'dong'})
-
-    v = V.util.context_validator(V.translate)(dict(y=True, f=False),  'dong')
-    assert v('y') == True
 
 
 def test_to_unicode():
@@ -970,9 +810,6 @@ def test_to_unicode():
         v(s)
     assert e.value.unpack_errors() == {None: "cats"}
 
-    v = V.util.context_validator(V.to_unicode)(msg='cats')
-    assert v(u"brisbane") == u"brisbane"
-
 
 def test_is_unicode():
     v = V.is_unicode(msg="This is not unicode")
@@ -984,9 +821,6 @@ def test_is_unicode():
     with py.test.raises(V.Invalid) as e:
         v(1)
     assert e.value.unpack_errors() == {None: "This is not unicode"}
-
-    v = V.util.context_validator(V.is_unicode)(msg="This is not unicode")
-    assert v(u"parrot") == u"parrot"
 
 
 def test_to_string():
@@ -1004,9 +838,6 @@ def test_to_string():
         v(u)
     assert e.value.unpack_errors() == {None: "cats"}
 
-    v = V.util.context_validator(V.to_string)(msg="cats")
-    assert v('parrots') == 'parrots'
-
 
 def test_is_string():
     v = V.is_string(msg="This is not a string")
@@ -1018,9 +849,6 @@ def test_is_string():
     with py.test.raises(V.Invalid) as e:
         v(1)
     assert e.value.unpack_errors() == {None: "This is not a string"}
-
-    v = V.util.context_validator(V.is_string)(msg="This is not a string")
-    assert v("parrot") == "parrot"
 
 
 def test_unpack_1():

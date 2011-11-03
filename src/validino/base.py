@@ -243,10 +243,7 @@ class Schema(object):
             else:
                 vdata = result.get(k, data.get(k))
             try:
-                if isinstance(vfunc, util.ContextValidator):
-                    tmp = vfunc(vdata, context)
-                else:
-                    tmp = vfunc(vdata)
+                tmp = vfunc(vdata, context)
             except Invalid, e:
                 # if the exception specifies a field name,
                 # let that override the key in the validator

@@ -14,12 +14,11 @@ def test_ContextValidator():
             return True
         return f
 
-    is_in_database = util.context_validator(_is_in_database)
+    is_in_database = _is_in_database
 
     assert is_in_database.__name__ == _is_in_database.__name__
     assert is_in_database.__doc__ == _is_in_database.__doc__
     v = is_in_database()
-    assert isinstance(v, util.ContextValidator)
 
     context = dict(database=['foo', 'bar', 'bum'])
     assert is_in_database()('foo', context)
@@ -49,8 +48,7 @@ def test_ContextValidator():
         None: "Problems were found in the submitted data.",
         'flibble': "it's not in the database"}
 
-    validator = V.util.context_validator(V.nested)(
-        flim=is_in_database('doodah'))
+    validator = V.nested(flim=is_in_database('doodah'))
     data = dict(flim='foo')
     context = dict(database=['foo', 'bar', 'bum'])
     result = validator(data, context)
