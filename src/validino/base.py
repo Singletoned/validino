@@ -6,6 +6,7 @@ import time
 from uuid import UUID, uuid1
 import types
 import copy
+import functools
 
 from validino import util
 
@@ -266,6 +267,7 @@ class Schema(object):
 
 
 def confirm_type(typespec, msg=None):
+    @functools.wraps(confirm_type)
     def f(value, context=None):
         if isinstance(value, typespec):
             return value
@@ -274,6 +276,7 @@ def confirm_type(typespec, msg=None):
 
 
 def translate(mapping, msg=None):
+    @functools.wraps(translate)
     def f(value, context=None):
         try:
             return mapping[value]
@@ -283,6 +286,7 @@ def translate(mapping, msg=None):
 
 
 def is_unicode(msg=None):
+    @functools.wraps(is_unicode)
     def f(value, context=None):
         if isinstance(value, unicode):
             return value
@@ -292,6 +296,7 @@ def is_unicode(msg=None):
 
 
 def to_unicode(encoding='utf8', errors='strict', msg=None):
+    @functools.wraps(to_unicode)
     def f(value, context=None):
         if isinstance(value, unicode):
             return value
@@ -308,6 +313,7 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
 
 
 def is_string(msg=None):
+    @functools.wraps(is_string)
     def f(value, context=None):
         if isinstance(value, str):
             return value
@@ -317,6 +323,7 @@ def is_string(msg=None):
 
 
 def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
+    @functools.wraps(to_string)
     def f(value, context=None):
         if isinstance(value, str):
             return value
@@ -338,6 +345,7 @@ def is_scalar(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a scalar.
     """
+    @functools.wraps(is_scalar)
     def f(value, context=None):
         if isinstance(value, listtypes):
             raise Invalid(_msg(msg, 'is_scalar', 'expected scalar value'))
@@ -349,6 +357,7 @@ def is_list(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a list.
     """
+    @functools.wraps(is_list)
     def f(value, context=None):
         if not isinstance(value, listtypes):
             raise Invalid(_msg(msg, "is_list", "expected list value"))
@@ -363,6 +372,7 @@ def to_scalar(listtypes=(list,)):
 
     This raises no exceptions.
     """
+    @functools.wraps(to_scalar)
     def f(value, context=None):
         if isinstance(value, listtypes):
             return value[0]
@@ -377,6 +387,7 @@ def to_list(listtypes=(list,)):
 
     This raises no exceptions.
     """
+    @functools.wraps(to_list)
     def f(value, context=None):
         if not isinstance(value, listtypes):
             return [value]
@@ -390,6 +401,7 @@ def default(defaultValue):
 
     This raises no exceptions.
     """
+    @functools.wraps(default)
     def f(value, context=None):
         if value is None:
             return defaultValue
@@ -402,6 +414,7 @@ def all_of(*validators):
     Applies each of a series of validators in turn, passing the return
     value of each to the next.
     """
+    @functools.wraps(all_of)
     def f(value, context=None):
         for v in validators:
             value = v(value, context=context)
@@ -415,6 +428,7 @@ def either(*validators):
     exceptions they raise, and returns the result of the first one
     that works.  If none work, the last exception caught is re-raised.
     """
+    @functools.wraps(either)
     def f(value, context=None):
         last_exception = None
         for v in validators:
@@ -435,6 +449,7 @@ def check(*validators):
     ignoring the validators return value.  The function returns the
     original input data (which, if it mutable, may have been changed).
     """
+    @functools.wraps(check)
     def f(value, context=None):
         for v in validators:
             v(value, context=context)
@@ -449,6 +464,7 @@ def excursion(*validators):
     data survives validation, you get a copy of the data from the
     point the excursion started.
     """
+    @functools.wraps(excursion)
     def f(value, context=None):
         return_value = copy.copy(value)
         all_of(*validators)(value)
@@ -457,6 +473,7 @@ def excursion(*validators):
 
 
 def equal(val, msg=None):
+    @functools.wraps(equal)
     def f(value, context=None):
         if value == val:
             return value
@@ -465,6 +482,7 @@ def equal(val, msg=None):
 
 
 def not_equal(val, msg=None):
+    @functools.wraps(not_equal)
     def f(value, context=None):
         if value != val:
             return value
@@ -473,6 +491,7 @@ def not_equal(val, msg=None):
 
 
 def empty(msg=None):
+    @functools.wraps(empty)
     def f(value, context=None):
         if value == '' or value is None:
             return value
@@ -481,6 +500,7 @@ def empty(msg=None):
 
 
 def not_empty(msg=None):
+    @functools.wraps(not_empty)
     def f(value, context=None):
         if value != '' and value != None:
             return value
@@ -505,6 +525,7 @@ def clamp(min=None, max=None, msg=None):
     clamp a value between minimum and maximum values (either
     of which are optional).
     """
+    @functools.wraps(clamp)
     def f(value, context=None):
         if min is not None and value < min:
             raise Invalid(_msg(msg, "min", "value below minimum"))
@@ -519,6 +540,7 @@ def clamp_length(min=None, max=None, msg=None):
     clamp a value between minimum and maximum lengths (either
     of which are optional).
     """
+    @functools.wraps(clamp_length)
     def f(value, context=None):
         vlen = len(value)
         if min is not None and vlen < min:
@@ -534,6 +556,7 @@ def belongs(domain, msg=None):
     ensures that the value belongs to the domain
     specified.
     """
+    @functools.wraps(belongs)
     def f(value, context=None):
         if value in domain:
             return value
@@ -546,6 +569,7 @@ def not_belongs(domain, msg=None):
     ensures that the value does not belong to the domain
     specified.
     """
+    @functools.wraps(not_belongs)
     def f(value, context=None):
         if value not in domain:
             return value
@@ -559,6 +583,7 @@ def parse_time(format, msg=None):
     the given format, returning a timetuple,
     or raises an Invalid exception.
     """
+    @functools.wraps(parse_time)
     def f(value, context=None):
         try:
             return time.strptime(value, format)
@@ -571,6 +596,7 @@ def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
     """
+    @functools.wraps(parse_date)
     def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.date(*v[:3])
@@ -581,6 +607,7 @@ def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
     """
+    @functools.wraps(parse_datetime)
     def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.datetime(*v[:6])
@@ -591,6 +618,7 @@ def uuid(msg=None, default=False):
     """
     Accepts any value that can be converted to a uuid
     """
+    @functools.wraps(uuid)
     def f(value, context=None):
         try:
             v = str(UUID(str(value)))
@@ -615,6 +643,7 @@ def to_integer(msg=None):
     ...
     Invalid: {None: 'me no convert'}
     """
+    @functools.wraps(to_integer)
     def f(value, context=None):
         try:
             return int(value)
@@ -627,6 +656,7 @@ def is_integer(msg=None):
     """
     Tests whether the value in an integer
     """
+    @functools.wraps(is_integer)
     def f(value, context=None):
         if isinstance(value, int):
             return value
@@ -651,6 +681,7 @@ def to_boolean(msg=None, fuzzy=False):
     """
     true_strings = ['true', 't', 'y', 'yes']
     false_strings = ['false', 'f', 'n', 'no']
+    @functools.wraps(to_boolean)
     def f(value, context=None):
         if fuzzy and isinstance(value, basestring):
             if value.lower() in true_strings:
@@ -666,6 +697,7 @@ def regex(pat, msg=None):
     tests the value against the given regex pattern
     and raises Invalid if it doesn't match.
     """
+    @functools.wraps(regex)
     def f(value, context=None):
         m = re.match(pat, value)
         if not m:
@@ -678,6 +710,7 @@ def regex_sub(pat, sub):
     """
     performs regex substitution on the input value.
     """
+    @functools.wraps(regex_sub)
     def f(value, context=None):
         return re.sub(pat, sub, value)
     return f
@@ -688,6 +721,7 @@ def fields_equal(msg=None, field=_default):
     when passed a collection of values,
     verifies that they are all equal.
     """
+    @functools.wraps(fields_equal)
     def f(values, context=None):
         if len(set(values)) != 1:
             m = _msg(msg, 'fields_equal', "fields not equal")
@@ -704,6 +738,7 @@ def fields_match(name1, name2, msg=None, field=_default):
     verifies that the values associated with the keys 'name1' and
     'name2' in value (which must be a dict) are identical.
     """
+    @functools.wraps(fields_match)
     def f(value, context=None):
         if value[name1] != value[name2]:
             m = _msg(msg, 'fields_match', 'fields do not match')
@@ -719,6 +754,7 @@ def nested(**kwargs):
     """
     Behaves like a dict.  It's keys are names, it's values are validators
     """
+    @functools.wraps(nested)
     def f(value, context=None):
         data = dict()
         errors = dict()
@@ -741,6 +777,7 @@ def nested_many(sub_validator):
     """
     Applies the validator to each of the values
     """
+    @functools.wraps(nested_many)
     def f(value, context=None):
         data = dict()
         errors = dict()
@@ -763,6 +800,7 @@ def only_one_of(msg=None, field=None):
     """
     Check that only one of the given values is True.
     """
+    @functools.wraps(only_one_of)
     def f(values, context=None):
         if sum([int(bool(val)) for val in values]) > 1:
             m = _msg(msg, 'only_one_of', 'more than one value present')

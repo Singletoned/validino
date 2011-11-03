@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uuid, datetime
+import uuid, datetime, functools
 
 import py
 
@@ -10,6 +10,7 @@ from util import assert_invalid
 
 
 def is_in_context():
+    @functools.wraps(is_in_context)
     def f(value, context):
         if not value in context:
             raise V.Invalid()
@@ -93,6 +94,7 @@ def test_nested():
         flim=V.to_unicode(),
         flam=V.to_unicode())
     assert validator(data) == expected
+    assert validator.__name__ == "nested"
 
     validator = V.nested(
         flim=V.to_unicode(),
@@ -173,6 +175,7 @@ def test_nested_many():
         c=3)
     result = validator(data)
     assert result == expected
+    assert validator.__name__ == "nested_many"
 
     validator = V.nested_many(
         is_in_context())
@@ -228,6 +231,7 @@ def test_nested_many_fail_nested_errors():
 
 def test_only_one_of():
     v = V.only_one_of(msg="Please only choose one value")
+    assert v.__name__ == "only_one_of"
     assert v((0, 1)) == (0, 1)
     assert v((1, False, None, [])) == (1, False, None, [])
     with py.test.raises(V.Invalid) as e:
@@ -253,6 +257,7 @@ def test_only_one_of():
 
 def test_to_boolean():
     validator = V.to_boolean()
+    assert validator.__name__ == "to_boolean"
     def do_test(v, t_or_f):
         assert validator(v) == t_or_f
     true_values = [True, 'True', 'False', 'true', 'None', 1, object(), [False], 'f', 'no']
@@ -278,6 +283,7 @@ def test_to_boolean_fuzzy():
 def test_is_scalar():
     msg = 'sc'
     v = V.is_scalar(msg=msg)
+    assert v.__name__ == "is_scalar"
     assert v(40) == 40
     assert_invalid(
         lambda: v([40]),
@@ -287,6 +293,7 @@ def test_is_scalar():
 def test_is_list():
     msg = "list"
     v = V.is_list(msg=msg)
+    assert v.__name__ == "is_list"
     assert v([40]) == [40]
     assert_invalid(
         lambda: v(40),
@@ -295,6 +302,7 @@ def test_is_list():
 
 def test_to_scalar():
     v = V.to_scalar()
+    assert v.__name__ == "to_scalar"
     assert v([40]) == 40
     assert v(40) == 40
     assert v(range(40)) == 0
@@ -302,6 +310,7 @@ def test_to_scalar():
 
 def test_to_list():
     v = V.to_list()
+    assert v.__name__ == "to_list"
     assert v(['a', 'b']) == ['a', 'b']
     assert v('a') == ['a']
 
@@ -309,6 +318,7 @@ def test_to_list():
 def test_clamp():
     msg = 'You are a pear'
     v = V.clamp(min=30, msg=msg)
+    assert v.__name__ == "clamp"
     assert v(50) == 50
     assert_invalid(
         lambda: v(20),
@@ -329,6 +339,7 @@ def test_clamp():
 def test_clamp_length():
     msg = 'You are a pear'
     v = V.clamp_length(min=3, msg=msg)
+    assert v.__name__ == "clamp_length"
     assert v('500') == '500'
     assert_invalid(
         lambda: v('eh'),
@@ -356,6 +367,7 @@ def test_check():
         is_in_context(),
         add_z,
         partial(len_d, size=3))
+    assert validator.__name__ == "check"
     result = validator(d, context=[dict(x=5, y=100)])
     assert result is d
     assert d['z'] == 300
@@ -364,6 +376,7 @@ def test_check():
 def test_default():
     v = V.default("pong")
     assert v(None) == 'pong'
+    assert v.__name__ == "default"
 
 
 def test_dict_nest():
@@ -405,6 +418,7 @@ def test_dict_nest():
 def test_uuid():
     msg = "Please enter a uuid"
     v = V.uuid(msg=msg)
+    assert v.__name__ == "uuid"
     guid = uuid.uuid5(uuid.NAMESPACE_DNS, "a test id")
     assert v(guid) == str(guid)
     assert v(str(guid)) == str(guid)
@@ -425,6 +439,7 @@ def test_uuid():
 
 def test_all_of():
     v = V.all_of(V.to_string('foo'), V.not_empty('bar'))
+    assert v.__name__ == "all_of"
     assert v('bob') == 'bob'
     with py.test.raises(V.Invalid) as e:
         assert v('')
@@ -466,6 +481,7 @@ def test_all_of_2():
 def test_either():
     msg = "please enter an integer"
     v = V.either(V.empty(), V.to_integer(msg=msg))
+    assert v.__name__ == "either"
     assert v('') == ''
     assert v('40') == 40
     assert_invalid(
@@ -481,6 +497,7 @@ def test_either():
 
 def test_empty():
     v = V.empty(msg="scorch me")
+    assert v.__name__ == "empty"
     assert v('') == ''
     assert v(None) == None
     assert_invalid(
@@ -490,6 +507,7 @@ def test_empty():
 
 def test_equal():
     v = V.equal('egg', msg="not equal")
+    assert v.__name__ == "equal"
     assert v('egg') == 'egg'
     assert_invalid(
         lambda: v('bob'),
@@ -498,6 +516,7 @@ def test_equal():
 
 def test_not_equal():
     v = V.not_equal('egg', msg='equal')
+    assert v.__name__ == "not_equal"
     assert v('plop') == 'plop'
     assert_invalid(
         lambda: v('egg'),
@@ -507,6 +526,7 @@ def test_not_equal():
 def test_is_integer():
     msg = "please enter an integer"
     v = V.is_integer(msg=msg)
+    assert v.__name__ == "is_integer"
     assert v(40) == 40
     assert_invalid(
         lambda: v('whack him until he screams'),
@@ -516,6 +536,7 @@ def test_is_integer():
 def test_to_integer():
     msg = "please enter an integer"
     v = V.to_integer(msg=msg)
+    assert v.__name__ == "to_integer"
     assert v('40') == 40
     assert_invalid(
         lambda: v('whack him until he screams'),
@@ -525,6 +546,7 @@ def test_to_integer():
 def test_not_empty():
     msg = "hammer my xylophone"
     v = V.not_empty(msg=msg)
+    assert v.__name__ == "not_empty"
     assert v("frog") == 'frog'
     assert_invalid(
         lambda: v(''),
@@ -537,6 +559,7 @@ def test_not_empty():
 def test_belongs():
     msg = "rinse me a robot"
     v = V.belongs('pinko widget frog lump'.split(), msg=msg)
+    assert v.__name__ == "belongs"
     assert v('pinko') == 'pinko'
     assert_invalid(
         lambda: v('snot'),
@@ -546,6 +569,7 @@ def test_belongs():
 def test_not_belongs():
     msg = "belittle my humbug"
     v = V.not_belongs(range(5), msg=msg)
+    assert v.__name__ == "not_belongs"
     assert v('pinko') == 'pinko'
     assert_invalid(
         lambda: v(4),
@@ -556,6 +580,7 @@ def test_parse_date():
     fmt = '%m %d %Y'
     msg = 'Gargantua and Pantagruel'
     v = V.parse_date(fmt, msg)
+    assert v.__name__ == "parse_date"
     dt = v('07 02 2007')
     assert dt.year == 2007
     assert dt.month == 7
@@ -567,6 +592,7 @@ def test_parse_datetime():
     fmt = '%m %d %Y %H:%M'
     msg = 'Gargantua and Pantagruel'
     v = V.parse_datetime(fmt, msg)
+    assert v.__name__ == "parse_datetime"
     dt = v('07 02 2007 12:34')
     assert dt.year == 2007
     assert dt.hour == 12
@@ -578,6 +604,7 @@ def test_parse_time():
     fmt = '%m %d %Y'
     msg = "potted shrimp"
     v = V.parse_time(fmt, msg)
+    assert v.__name__ == "parse_time"
     ts = v('10 03 2007')[:3]
     assert ts == (2007, 10, 3)
     assert_invalid(
@@ -587,6 +614,7 @@ def test_parse_time():
 
 def test_regex():
     v = V.regex('shrubbery\d{3}$', 'regex')
+    assert v.__name__ == "regex"
     assert v('shrubbery222') == 'shrubbery222'
     assert_invalid(
         lambda: v('buy a shrubbery333, ok?'),
@@ -595,6 +623,7 @@ def test_regex():
 
 def test_regex_sub():
     v = V.regex_sub('shrubbery', 'potted plant')
+    assert v.__name__ == "regex_sub"
     res = v('a shrubbery would be nice')
     assert res == 'a potted plant would be nice'
 
@@ -724,6 +753,7 @@ def test_fields_match():
            goo=3,
            poo=56)
     v = V.fields_match('foo', 'goo')
+    assert v.__name__ == "fields_match"
     assert d == v(d)
     v = V.fields_match('foo', 'poo', 'oink')
     assert_invalid(
@@ -739,6 +769,7 @@ def test_fields_match():
 def test_fields_equal():
     values = ("pong", "pong")
     v = V.fields_equal('hog')
+    assert v.__name__ == "fields_equal"
     assert values == v(values)
     values = ('tim', 'worthy')
     assert_invalid(
@@ -767,6 +798,7 @@ def test_excursion():
     v = V.excursion(
         lambda x, context: x.split('@')[0],
         V.belongs(['gadzooks', 'willy'], msg='pancreatic'))
+    assert v.__name__ == "excursion"
     assert x == v(x)
     assert_invalid(
         lambda: v('hieratic impulses'),
@@ -781,6 +813,7 @@ def test_excursion():
 
 def test_confirm_type():
     v = V.confirm_type((int, float), 'not a number')
+    assert v.__name__ == "confirm_type"
     assert v(45) == 45
     assert_invalid(
         lambda: v('45'),
@@ -789,6 +822,7 @@ def test_confirm_type():
 
 def test_translate():
     v = V.translate(dict(y=True, f=False),  'dong')
+    assert v.__name__ == "translate"
     assert v('y') == True
     assert_invalid(
         lambda: v('pod'),
@@ -797,6 +831,7 @@ def test_translate():
 
 def test_to_unicode():
     v = V.to_unicode(msg='cats')
+    assert v.__name__ == "to_unicode"
     assert v(u"brisbane") == u"brisbane"
     assert v(1) == u"1"
     for t in [
@@ -814,6 +849,7 @@ def test_to_unicode():
 
 def test_is_unicode():
     v = V.is_unicode(msg="This is not unicode")
+    assert v.__name__ == "is_unicode"
     assert v(u"parrot") == u"parrot"
     assert isinstance(v(u"parrot"), unicode)
     with py.test.raises(V.Invalid) as e:
@@ -826,6 +862,7 @@ def test_is_unicode():
 
 def test_to_string():
     v = V.to_string(msg="cats")
+    assert v.__name__ == "to_string"
     assert v('parrots') == 'parrots'
     for t in [
         u'parrots', 'parrots', 1, object(), None,
@@ -842,6 +879,7 @@ def test_to_string():
 
 def test_is_string():
     v = V.is_string(msg="This is not a string")
+    assert v.__name__ == "is_string"
     assert v("parrot") == "parrot"
     assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
