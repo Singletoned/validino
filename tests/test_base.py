@@ -11,7 +11,8 @@ from util import assert_invalid
 
 def is_in_context():
     def f(value, context):
-        assert value in context
+        if not value in context:
+            raise V.Invalid()
         return value
     return f
 
