@@ -29,7 +29,7 @@ __all__ = [
     'is_scalar',
     'not_equal',
     'uuid',
-    'integer',
+    'is_integer',
     'to_integer',
     'to_boolean',
     'not_empty',
@@ -623,7 +623,7 @@ def to_integer(msg=None):
     return f
 
 
-def integer(msg=None):
+def is_integer(msg=None):
     """
     Tests whether the value in an integer
     """
@@ -631,7 +631,7 @@ def integer(msg=None):
         if isinstance(value, int):
             return value
         else:
-            raise Invalid(_msg(msg, "integer", "not an integer"))
+            raise Invalid(_msg(msg, "is_integer", "not an integer"))
     return f
 
 

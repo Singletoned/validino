@@ -54,7 +54,7 @@ def test_Invalid_unpack_errors():
 def test_Schema_errors():
     schema = V.Schema(
         dict(
-            foo=V.integer(msg="number, not word, idiot!")))
+            foo=V.is_integer(msg="number, not word, idiot!")))
     data = dict(
         foo="one")
     expected = {
@@ -137,7 +137,7 @@ def test_nested_missing():
 def test_nested_with_bad_data():
     validator = V.nested(
         flam=V.to_unicode(),
-        flim=V.integer())
+        flim=V.is_integer())
     data = dict(
         flim="Flim",
         flam="Flam")
@@ -149,7 +149,7 @@ def test_nested_with_bad_data():
     validator = V.nested(
         foo=V.nested(
             flam=V.to_unicode(),
-            flim=V.integer()))
+            flim=V.is_integer()))
     data = dict(
             foo=dict(
                 flim="Flim",
@@ -190,7 +190,7 @@ def test_nested_many():
 
 def test_nested_many_fail():
     validator = V.nested_many(
-        V.integer())
+        V.is_integer())
     data = dict(
         a=1,
         b="two",
@@ -211,7 +211,7 @@ def test_nested_many_fail_nested_errors():
     schema = V.Schema(
         dict(
             foo=V.nested_many(
-                V.integer())))
+                V.is_integer())))
     data = dict(
         foo=dict(
             a=1,
@@ -437,7 +437,7 @@ def test_all_of():
 
 
 def test_all_of_2():
-    messages = dict(integer='please enter an integer',
+    messages = dict(to_integer='not an integer',
                   belongs='invalid choice',
                   min='too small',
                   max='too big')
@@ -451,7 +451,7 @@ def test_all_of_2():
     assert v('44  ') == 44
     assert_invalid(
         lambda: v(' prick '),
-        {None: messages['integer']})
+        {None: messages['to_integer']})
     assert_invalid(
         lambda: v(' 41  '),
         {None: messages['belongs']})
@@ -504,9 +504,9 @@ def test_not_equal():
         {None: 'equal'})
 
 
-def test_integer():
+def test_is_integer():
     msg = "please enter an integer"
-    v = V.integer(msg=msg)
+    v = V.is_integer(msg=msg)
     assert v(40) == 40
     assert_invalid(
         lambda: v('whack him until he screams'),
@@ -630,8 +630,8 @@ def test_schema_1():
 
 def test_schema_2():
     s = V.Schema(
-        dict(x=(V.integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
-             y=(V.integer('inty'), V.clamp(min=5, max=100, msg='clampy')),
+        dict(x=(V.is_integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
+             y=(V.is_integer('inty'), V.clamp(min=5, max=100, msg='clampy')),
              text=V.strip),
         "schema"
         )
@@ -661,8 +661,8 @@ def test_schema_2():
 
 def test_schema_3():
     v = V.Schema(
-        dict(x=(V.integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
-             y=(V.integer('inty'), V.clamp(min=5, max=100, msg='clampy')),
+        dict(x=(V.is_integer('intx'), V.clamp(min=5, max=100, msg='clampx')),
+             y=(V.is_integer('inty'), V.clamp(min=5, max=100, msg='clampy')),
              text=V.strip),
         {'schema.error' : 'schema',
          'schema.extra' : 'extra',
@@ -690,8 +690,8 @@ def test_schema_3():
 def test_schema_4():
     s = V.Schema(
         {
-            'foo': V.integer(),
-            'bar': V.integer(),
+            'foo': V.is_integer(),
+            'bar': V.is_integer(),
             ('foo', 'bar'): V.fields_equal(msg='flam', field=None)
         },
         msg="flibble")
@@ -905,7 +905,7 @@ def test_errors():
                 V.to_unicode(msg="foo can't be converted"),
                 V.not_empty(msg="foo is empty")),
             bar=(
-                V.integer(msg="bar isn't an integer"),
+                V.is_integer(msg="bar isn't an integer"),
                 V.not_empty(msg="bar is empty"))),
         msg="Check the errors and try again.  Moron.")
 
