@@ -428,7 +428,7 @@ def either(*validators):
         last_exception = None
         for v in validators:
             try:
-                value = v(value)
+                value = v(value, context=context)
             except Exception, e:
                 last_exception = e
             else:

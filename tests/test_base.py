@@ -562,10 +562,10 @@ def test_either():
     assert v('') == ''
 
     v = V.util.context_validator(V.either)(
-        V.util.context_validator(V.empty)(),
+        is_in_context(),
         V.to_integer(msg=msg))
     assert v('40') == 40
-    assert v('') == ''
+    assert v('foo', context=['foo']) == 'foo'
 
 
 def test_empty():
