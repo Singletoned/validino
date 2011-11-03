@@ -1,8 +1,8 @@
 from setuptools import setup, Extension
 
-description="a simple validation framework"
+description="A simple validation framework"
 long_description="""
-validino is a simple validation framework with a functional
+Validino is a simple validation framework with a functional
 syntax.
 """
 platforms="OS Independent"
