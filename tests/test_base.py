@@ -350,6 +350,13 @@ def test_clamp_length():
         lambda: v('I told you that Ronald would eat it when you were in the bathroom'),
         {None: 'kong'})
 
+    msg = "Enter less than %(max)s.  You entered %(length)s."
+    v = V.clamp_length(max=30, msg=msg)
+    with py.test.raises(V.Invalid) as e:
+        v("*"*50)
+    errors = e.value.unpack_errors()
+    expected = {None: "Enter less than 30.  You entered 50."}
+    assert errors == expected
 
 def test_check():
     d = dict(x=5, y=100)

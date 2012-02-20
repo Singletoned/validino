@@ -67,17 +67,19 @@ def _add_error_message(d, k, msg):
         d[k].append(msg)
 
 
-def _msg(msg, key, default):
+def _msg(msg, key, default, msg_context=None):
     """
     internal message-handling routine.
     """
+    msg_context = msg_context or dict()
     try:
-        return msg.get(key, default)
+        msg = msg.get(key, default)
     except AttributeError:
         if msg is None:
-            return default
+            msg = default
         else:
-            return msg
+            msg = msg
+    return msg % msg_context
 
 
 def dict_nest(data, separator='.'):
@@ -543,10 +545,11 @@ def clamp_length(min=None, max=None, msg=None):
     @functools.wraps(clamp_length)
     def f(value, context=None):
         vlen = len(value)
+        msg_context = dict(min=min, max=max, length=vlen)
         if min is not None and vlen < min:
-            raise Invalid(_msg(msg, "minlen", "too short"))
+            raise Invalid(_msg(msg, "minlen", "too short", msg_context=msg_context))
         if max is not None and vlen > max:
-            raise Invalid(_msg(msg, "maxlen", "too long"))
+            raise Invalid(_msg(msg, "maxlen", "too long", msg_context=msg_context))
         return value
     return f
 
