@@ -11,51 +11,18 @@ import functools
 from validino import util
 
 __all__ = [
-    'Invalid',
-    'check',
-    'clamp',
-    'clamp_length',
-    'confirm_type',
-    'default',
-    'dict_nest',
-    'dict_unnest',
-    'all_of',
-    'either',
-    'empty',
-    'equal',
-    'excursion',
-    'fields_equal',
-    'fields_match',
-    'is_list',
-    'is_scalar',
-    'not_equal',
-    'uuid',
-    'is_integer',
-    'to_integer',
-    'to_boolean',
-    'not_empty',
-    'not_belongs',
-    'belongs',
-    'parse_date',
-    'parse_datetime',
-    'parse_time',
-    'regex',
-    'regex_sub',
-    'Schema',
-    'strip',
-    'to_list',
-    'to_scalar',
-    'is_string',
-    'to_string',
-    'is_bytes',
-    'to_bytes',
-    'translate',
-    'nested',
-    'nested_many',
-    'only_one_of']
-
+    'Invalid', 'check', 'clamp', 'clamp_length', 'confirm_type', 'default',
+    'dict_nest', 'dict_unnest', 'all_of', 'either', 'empty', 'equal',
+    'excursion', 'fields_equal', 'fields_match', 'is_list', 'is_scalar',
+    'not_equal', 'uuid', 'is_integer', 'to_integer', 'to_boolean',
+    'not_empty', 'not_belongs', 'belongs', 'parse_date', 'parse_datetime',
+    'parse_time', 'regex', 'regex_sub', 'Schema', 'strip', 'to_list',
+    'to_scalar', 'is_string', 'to_string', 'is_bytes', 'to_bytes',
+    'translate', 'nested', 'nested_many', 'only_one_of'
+]
 
 _default = object()
+
 
 def _add_error_message(d, k, msg):
     """
@@ -118,6 +85,7 @@ def dict_unnest(data, separator='.'):
 
 class Invalid(Exception):
     """A general Exception for things that are Invalid"""
+
     def __init__(self, errors=None, field=_default):
         if not errors:
             errors = dict()
@@ -130,8 +98,10 @@ class Invalid(Exception):
 
     def _unpack_error(self, name, error):
         if isinstance(error, dict):
-            result = dict(
-                [self._unpack_error(key, value) for (key, value) in error.items()])
+            result = dict([
+                self._unpack_error(key, value)
+                for (key, value) in error.items()
+            ])
         elif isinstance(error, (list, tuple)):
             name, result = self._unpack_error(name, error[0])
         elif isinstance(error, Invalid):
@@ -194,12 +164,14 @@ class Schema(object):
     extra keys will result in an error.
     """
 
-    def __init__(self,
-                 subvalidators,
-                 msg=None,
-                 allow_missing=True,
-                 allow_extra=True,
-                 filter_extra=True):
+    def __init__(
+        self,
+        subvalidators,
+        msg=None,
+        allow_missing=True,
+        allow_extra=True,
+        filter_extra=True
+    ):
         self.subvalidators = subvalidators
         self.msg = msg
         self.allow_missing = allow_missing
@@ -233,14 +205,16 @@ class Schema(object):
                     raise Invalid(m)
             if not self.allow_missing:
                 if schemakeys.difference(inputkeys):
-                    m = _msg(self.msg, 'schema.missing', 'missing keys in input')
+                    m = _msg(
+                        self.msg, 'schema.missing', 'missing keys in input'
+                    )
                     raise Invalid(m)
 
         for k in self.subvalidators:
             vfunc = self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
                 vfunc = all_of(*vfunc)
-            have_plural = isinstance(k, (list,tuple))
+            have_plural = isinstance(k, (list, tuple))
             if have_plural:
                 vdata = tuple(result.get(x, data.get(x)) for x in k)
             else:
@@ -261,8 +235,10 @@ class Schema(object):
 
         if exceptions:
             if None not in exceptions:
-                m = _msg(self.msg, "schema.error",
-                         "Problems were found in the submitted data.")
+                m = _msg(
+                    self.msg, "schema.error",
+                    "Problems were found in the submitted data."
+                )
                 exceptions[None] = m
             raise Invalid(exceptions)
         return result
@@ -274,6 +250,7 @@ def confirm_type(typespec, msg=None):
         if isinstance(value, typespec):
             return value
         raise Invalid(_msg(msg, "confirm_type", "unexpected type"))
+
     return f
 
 
@@ -284,6 +261,7 @@ def translate(mapping, msg=None):
             return mapping[value]
         except KeyError:
             raise Invalid(_msg(msg, "belongs", "invalid choice"))
+
     return f
 
 
@@ -294,6 +272,7 @@ def is_string(msg=None):
             return value
         else:
             raise Invalid(_msg(msg, 'is_string', 'not string'))
+
     return f
 
 
@@ -311,6 +290,7 @@ def to_string(encoding='utf8', errors='strict', msg=None):
                 return str(value)
             except UnicodeError as e:
                 raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
+
     return f
 
 
@@ -321,6 +301,7 @@ def is_bytes(msg=None):
             return value
         else:
             raise Invalid(_msg(msg, 'is_bytes', 'not bytes'))
+
     return f
 
 
@@ -340,6 +321,7 @@ def to_bytes(encoding='utf8', errors='strict', coerce=True, msg=None):
                 return bytes(str(value), encoding)
             except UnicodeError as e:
                 raise Invalid(_msg(msg, 'to_bytes', 'encoding error'))
+
     return f
 
 
@@ -347,11 +329,13 @@ def is_scalar(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a scalar.
     """
+
     @functools.wraps(is_scalar)
     def f(value, context=None):
         if isinstance(value, listtypes):
             raise Invalid(_msg(msg, 'is_scalar', 'expected scalar value'))
         return value
+
     return f
 
 
@@ -359,11 +343,13 @@ def is_list(msg=None, listtypes=(list,)):
     """
     Raises an exception if the value is not a list.
     """
+
     @functools.wraps(is_list)
     def f(value, context=None):
         if not isinstance(value, listtypes):
             raise Invalid(_msg(msg, "is_list", "expected list value"))
         return value
+
     return f
 
 
@@ -374,11 +360,13 @@ def to_scalar(listtypes=(list,)):
 
     This raises no exceptions.
     """
+
     @functools.wraps(to_scalar)
     def f(value, context=None):
         if isinstance(value, listtypes):
             return value[0]
         return value
+
     return f
 
 
@@ -389,11 +377,13 @@ def to_list(listtypes=(list,)):
 
     This raises no exceptions.
     """
+
     @functools.wraps(to_list)
     def f(value, context=None):
         if not isinstance(value, listtypes):
             return [value]
         return value
+
     return f
 
 
@@ -403,11 +393,13 @@ def default(defaultValue):
 
     This raises no exceptions.
     """
+
     @functools.wraps(default)
     def f(value, context=None):
         if value is None:
             return defaultValue
         return value
+
     return f
 
 
@@ -416,11 +408,13 @@ def all_of(*validators):
     Applies each of a series of validators in turn, passing the return
     value of each to the next.
     """
+
     @functools.wraps(all_of)
     def f(value, context=None):
         for v in validators:
             value = v(value, context=context)
         return value
+
     return f
 
 
@@ -430,6 +424,7 @@ def either(*validators):
     exceptions they raise, and returns the result of the first one
     that works.  If none work, the last exception caught is re-raised.
     """
+
     @functools.wraps(either)
     def f(value, context=None):
         last_exception = None
@@ -441,6 +436,7 @@ def either(*validators):
             else:
                 return value
         raise last_exception
+
     return f
 
 
@@ -451,11 +447,13 @@ def check(*validators):
     ignoring the validators return value.  The function returns the
     original input data (which, if it mutable, may have been changed).
     """
+
     @functools.wraps(check)
     def f(value, context=None):
         for v in validators:
             v(value, context=context)
         return value
+
     return f
 
 
@@ -466,11 +464,13 @@ def excursion(*validators):
     data survives validation, you get a copy of the data from the
     point the excursion started.
     """
+
     @functools.wraps(excursion)
     def f(value, context=None):
         return_value = copy.copy(value)
         all_of(*validators)(value)
         return return_value
+
     return f
 
 
@@ -480,6 +480,7 @@ def equal(val, msg=None):
         if value == val:
             return value
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
+
     return f
 
 
@@ -489,6 +490,7 @@ def not_equal(val, msg=None):
         if value != val:
             return value
         raise Invalid(_msg(msg, 'eq', 'invalid value'))
+
     return f
 
 
@@ -498,6 +500,7 @@ def empty(msg=None):
         if value == '' or value is None:
             return value
         raise Invalid(_msg(msg, "empty", "No value was expected"))
+
     return f
 
 
@@ -507,6 +510,7 @@ def not_empty(msg=None):
         if value != '' and value != None:
             return value
         raise Invalid(_msg(msg, 'notempty', "A non-empty value was expected"))
+
     return f
 
 
@@ -527,6 +531,7 @@ def clamp(min=None, max=None, msg=None):
     clamp a value between minimum and maximum values (either
     of which are optional).
     """
+
     @functools.wraps(clamp)
     def f(value, context=None):
         if min is not None and value < min:
@@ -534,6 +539,7 @@ def clamp(min=None, max=None, msg=None):
         if max is not None and value > max:
             raise Invalid(_msg(msg, "max", "value above maximum"))
         return value
+
     return f
 
 
@@ -542,6 +548,7 @@ def clamp_length(min=None, max=None, msg=None):
     clamp a value between minimum and maximum lengths (either
     of which are optional).
     """
+
     @functools.wraps(clamp_length)
     def f(value, context=None):
         vlen = len(value)
@@ -550,6 +557,7 @@ def clamp_length(min=None, max=None, msg=None):
         if max is not None and vlen > max:
             raise Invalid(_msg(msg, "maxlen", "too long"))
         return value
+
     return f
 
 
@@ -558,11 +566,13 @@ def belongs(domain, msg=None):
     ensures that the value belongs to the domain
     specified.
     """
+
     @functools.wraps(belongs)
     def f(value, context=None):
         if value in domain:
             return value
         raise Invalid(_msg(msg, "belongs", "invalid choice"))
+
     return f
 
 
@@ -571,11 +581,13 @@ def not_belongs(domain, msg=None):
     ensures that the value does not belong to the domain
     specified.
     """
+
     @functools.wraps(not_belongs)
     def f(value, context=None):
         if value not in domain:
             return value
         raise Invalid(_msg(msg, "not_belongs", "invalid choice"))
+
     return f
 
 
@@ -585,12 +597,14 @@ def parse_time(format, msg=None):
     the given format, returning a timetuple,
     or raises an Invalid exception.
     """
+
     @functools.wraps(parse_time)
     def f(value, context=None):
         try:
             return time.strptime(value, format)
         except ValueError:
             raise Invalid(_msg(msg, 'parse_time', "invalid time"))
+
     return f
 
 
@@ -598,10 +612,12 @@ def parse_date(format, msg=None):
     """
     like parse_time, but returns a datetime.date object.
     """
+
     @functools.wraps(parse_date)
     def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.date(*v[:3])
+
     return f
 
 
@@ -609,10 +625,12 @@ def parse_datetime(format, msg=None):
     """
     like parse_time, but returns a datetime.datetime object.
     """
+
     @functools.wraps(parse_datetime)
     def f(value, context=None):
         v = parse_time(format, msg)(value)
         return datetime.datetime(*v[:6])
+
     return f
 
 
@@ -620,6 +638,7 @@ def uuid(msg=None, default=False):
     """
     Accepts any value that can be converted to a uuid
     """
+
     @functools.wraps(uuid)
     def f(value, context=None):
         try:
@@ -630,6 +649,7 @@ def uuid(msg=None, default=False):
             else:
                 raise Invalid(_msg(msg, "uuid", "invalid uuid"))
         return v
+
     return f
 
 
@@ -645,12 +665,14 @@ def to_integer(msg=None):
     ...
     Invalid: {None: 'me no convert'}
     """
+
     @functools.wraps(to_integer)
     def f(value, context=None):
         try:
             return int(value)
         except (TypeError, ValueError):
             raise Invalid(_msg(msg, "integer", "not an integer"))
+
     return f
 
 
@@ -658,12 +680,14 @@ def is_integer(msg=None):
     """
     Tests whether the value in an integer
     """
+
     @functools.wraps(is_integer)
     def f(value, context=None):
         if isinstance(value, int):
             return value
         else:
             raise Invalid(_msg(msg, "is_integer", "not an integer"))
+
     return f
 
 
@@ -683,6 +707,7 @@ def to_boolean(msg=None, fuzzy=False):
     """
     true_strings = ['true', 't', 'y', 'yes']
     false_strings = ['false', 'f', 'n', 'no']
+
     @functools.wraps(to_boolean)
     def f(value, context=None):
         if fuzzy and isinstance(value, str):
@@ -691,6 +716,7 @@ def to_boolean(msg=None, fuzzy=False):
             elif value.lower() in false_strings:
                 return False
         return bool(value)
+
     return f
 
 
@@ -699,12 +725,14 @@ def regex(pat, msg=None):
     tests the value against the given regex pattern
     and raises Invalid if it doesn't match.
     """
+
     @functools.wraps(regex)
     def f(value, context=None):
         m = re.match(pat, value)
         if not m:
             raise Invalid(_msg(msg, 'regex', "does not match pattern"))
         return value
+
     return f
 
 
@@ -712,9 +740,11 @@ def regex_sub(pat, sub):
     """
     performs regex substitution on the input value.
     """
+
     @functools.wraps(regex_sub)
     def f(value, context=None):
         return re.sub(pat, sub, value)
+
     return f
 
 
@@ -723,6 +753,7 @@ def fields_equal(msg=None, field=_default):
     when passed a collection of values,
     verifies that they are all equal.
     """
+
     @functools.wraps(fields_equal)
     def f(values, context=None):
         if len(set(values)) != 1:
@@ -732,6 +763,7 @@ def fields_equal(msg=None, field=_default):
             else:
                 raise Invalid(m, field=field)
         return values
+
     return f
 
 
@@ -740,6 +772,7 @@ def fields_match(name1, name2, msg=None, field=_default):
     verifies that the values associated with the keys 'name1' and
     'name2' in value (which must be a dict) are identical.
     """
+
     @functools.wraps(fields_match)
     def f(value, context=None):
         if value[name1] != value[name2]:
@@ -749,6 +782,7 @@ def fields_match(name1, name2, msg=None, field=_default):
             else:
                 raise Invalid({field: m})
         return value
+
     return f
 
 
@@ -756,6 +790,7 @@ def nested(**kwargs):
     """
     Behaves like a dict.  It's keys are names, it's values are validators
     """
+
     @functools.wraps(nested)
     def f(value, context=None):
         data = dict()
@@ -772,6 +807,7 @@ def nested(**kwargs):
         if errors:
             raise Invalid(errors)
         return data
+
     return f
 
 
@@ -779,6 +815,7 @@ def nested_many(sub_validator):
     """
     Applies the validator to each of the values
     """
+
     @functools.wraps(nested_many)
     def f(value, context=None):
         data = dict()
@@ -795,6 +832,7 @@ def nested_many(sub_validator):
                 return data
         else:
             raise Invalid("No data found")
+
     return f
 
 
@@ -802,6 +840,7 @@ def only_one_of(msg=None, field=None):
     """
     Check that only one of the given values is True.
     """
+
     @functools.wraps(only_one_of)
     def f(values, context=None):
         if sum([int(bool(val)) for val in values]) > 1:
@@ -811,4 +850,5 @@ def only_one_of(msg=None, field=None):
             else:
                 raise Invalid(m)
         return values
+
     return f

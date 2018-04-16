@@ -2,10 +2,9 @@
 
 import validino.base as V
 
+
 class Field(object):
-
     _default_attrs = {}
-
     _default_validators = ()
 
     def __init__(self, *validators, **attributes):
@@ -34,8 +33,7 @@ class Field(object):
 
 
 class DateField(Field):
-    _default_attrs = dict(format='%m/%d/%Y',
-                        type='date')
+    _default_attrs = dict(format='%m/%d/%Y', type='date')
 
     def _make_validator(self, validators):
         validators = (V.parse_date(self.format),) + validators
@@ -43,8 +41,7 @@ class DateField(Field):
 
 
 class DateTimeField(Field):
-    _default_attrs = dict(format='%m/%d/%Y %H:%M',
-                        type='datetime')
+    _default_attrs = dict(format='%m/%d/%Y %H:%M', type='datetime')
 
     def _make_validator(self, validators):
         validators = (V.parse_datetime(self.format),) + validators
@@ -52,8 +49,7 @@ class DateTimeField(Field):
 
 
 class TimeField(Field):
-    _default_attrs = dict(format='%H:%M',
-                        type="time")
+    _default_attrs = dict(format='%H:%M', type="time")
 
     def _make_validator(self, validators):
         validators = (V.parse_time(self.format),) + validators
