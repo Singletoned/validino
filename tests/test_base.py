@@ -69,10 +69,10 @@ def test_Schema_errors():
 
 def test_nested_schema():
     nested_validators = dict(
-        foo=V.to_unicode(),
+        foo=V.to_string(),
         bar=V.nested(
-            flim=V.to_unicode(),
-            flam=V.to_unicode()))
+            flim=V.to_string(),
+            flam=V.to_string()))
     schema = V.Schema(nested_validators)
     data = dict(
         foo="Foo",
@@ -91,15 +91,15 @@ def test_nested():
         flim="Flim",
         flam="Flam")
     validator = V.nested(
-        flim=V.to_unicode(),
-        flam=V.to_unicode())
+        flim=V.to_string(),
+        flam=V.to_string())
     assert validator(data) == expected
     assert validator.__name__ == "nested"
 
     validator = V.nested(
-        flim=V.to_unicode(),
+        flim=V.to_string(),
         flam=V.all_of(
-            V.to_unicode(),
+            V.to_string(),
             is_in_context()))
     assert validator(data, context=dict(Flam=1)) == expected
 
@@ -109,9 +109,9 @@ def test_nested_missing():
         flim="Flim")
     validator = V.nested(
         flim=(
-            V.to_unicode(),
+            V.to_string(),
             V.not_empty()),
-        flam=V.to_unicode())
+        flam=V.to_string())
     with py.test.raises(V.Invalid) as e:
         validator(data)
     errors = e.value.unpack_errors()
@@ -125,9 +125,9 @@ def test_nested_missing():
         flim="key 'flim' is missing")
 
     validator = V.nested(
-        flim=V.to_unicode(),
+        flim=V.to_string(),
         flam=V.all_of(
-            V.to_unicode(),
+            V.to_string(),
             is_in_context()))
 
     with py.test.raises(V.Invalid) as e:
@@ -138,7 +138,7 @@ def test_nested_missing():
 
 def test_nested_with_bad_data():
     validator = V.nested(
-        flam=V.to_unicode(),
+        flam=V.to_string(),
         flim=V.is_integer())
     data = dict(
         flim="Flim",
@@ -150,7 +150,7 @@ def test_nested_with_bad_data():
 
     validator = V.nested(
         foo=V.nested(
-            flam=V.to_unicode(),
+            flam=V.to_string(),
             flim=V.is_integer()))
     data = dict(
             foo=dict(
@@ -829,65 +829,65 @@ def test_translate():
         {None: 'dong'})
 
 
-def test_to_unicode():
-    v = V.to_unicode(msg='cats')
-    assert v.__name__ == "to_unicode"
+def test_to_string():
+    v = V.to_string(msg='cats')
+    assert v.__name__ == "to_string"
     assert v("brisbane") == "brisbane"
     assert v(1) == "1"
     for t in [
         'parrots', 'parrots', 1, object(), None,
         ]:
         assert isinstance(v(t), str)
-    u = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
-    s = u.encode('utf-8')
-    assert v(s) == u
-    with py.test.raises(V.Invalid) as e:
-        v = V.to_unicode(encoding='ascii', msg='cats')
-        v(s)
-    assert e.value.unpack_errors() == {None: "cats"}
-
-
-def test_is_unicode():
-    v = V.is_unicode(msg="This is not unicode")
-    assert v.__name__ == "is_unicode"
-    assert v("parrot") == "parrot"
-    assert isinstance(v("parrot"), str)
-    with py.test.raises(V.Invalid) as e:
-        v("parrot")
-    assert e.value.unpack_errors() == {None: "This is not unicode"}
-    with py.test.raises(V.Invalid) as e:
-        v(1)
-    assert e.value.unpack_errors() == {None: "This is not unicode"}
-
-
-def test_to_string():
-    v = V.to_string(msg="cats")
-    assert v.__name__ == "to_string"
-    assert v('parrots') == 'parrots'
-    for t in [
-        'parrots', 'parrots', 1, object(), None,
-        ]:
-        assert isinstance(v(t), str)
-    u = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
-    s = u.encode('utf-8')
-    assert v(u) == s
+    s = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
+    b = s.encode('utf-8')
+    assert v(b) == s
     with py.test.raises(V.Invalid) as e:
         v = V.to_string(encoding='ascii', msg='cats')
-        v(u)
+        v(b)
     assert e.value.unpack_errors() == {None: "cats"}
 
 
 def test_is_string():
-    v = V.is_string(msg="This is not a string")
+    v = V.is_string(msg="This is not string")
     assert v.__name__ == "is_string"
     assert v("parrot") == "parrot"
     assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
-        v("parrot")
-    assert e.value.unpack_errors() == {None: "This is not a string"}
+        v(b"parrot")
+    assert e.value.unpack_errors() == {None: "This is not string"}
     with py.test.raises(V.Invalid) as e:
         v(1)
-    assert e.value.unpack_errors() == {None: "This is not a string"}
+    assert e.value.unpack_errors() == {None: "This is not string"}
+
+
+def test_to_bytes():
+    v = V.to_bytes(msg="cats")
+    assert v.__name__ == "to_bytes"
+    assert v('parrots') == b'parrots'
+    for t in [
+        'parrots', 'parrots', 1, object(), None,
+        ]:
+        assert isinstance(v(t), bytes)
+    u = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
+    b = u.encode('utf-8')
+    assert v(u) == b
+    with py.test.raises(V.Invalid) as e:
+        v = V.to_bytes(encoding='ascii', msg='cats')
+        v(u)
+    assert e.value.unpack_errors() == {None: "cats"}
+
+
+def test_is_bytes():
+    v = V.is_bytes(msg="This is not bytes")
+    assert v.__name__ == "is_bytes"
+    assert v(b"parrot") == b"parrot"
+    assert isinstance(v(b"parrot"), bytes)
+    with py.test.raises(V.Invalid) as e:
+        v("parrot")
+    assert e.value.unpack_errors() == {None: "This is not bytes"}
+    with py.test.raises(V.Invalid) as e:
+        v(1)
+    assert e.value.unpack_errors() == {None: "This is not bytes"}
 
 
 def test_unpack_1():
@@ -940,7 +940,7 @@ def test_errors():
     schema = V.Schema(
         dict(
             foo=(
-                V.to_unicode(msg="foo can't be converted"),
+                V.to_string(msg="foo can't be converted"),
                 V.not_empty(msg="foo is empty")),
             bar=(
                 V.is_integer(msg="bar isn't an integer"),

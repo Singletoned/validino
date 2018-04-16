@@ -45,10 +45,10 @@ __all__ = [
     'strip',
     'to_list',
     'to_scalar',
-    'is_unicode',
-    'to_unicode',
     'is_string',
     'to_string',
+    'is_bytes',
+    'to_bytes',
     'translate',
     'nested',
     'nested_many',
@@ -236,7 +236,7 @@ class Schema(object):
                     m = _msg(self.msg, 'schema.missing', 'missing keys in input')
                     raise Invalid(m)
 
-        for k in sorted(self.subvalidators):
+        for k in self.subvalidators:
             vfunc = self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
                 vfunc = all_of(*vfunc)
@@ -287,18 +287,18 @@ def translate(mapping, msg=None):
     return f
 
 
-def is_unicode(msg=None):
-    @functools.wraps(is_unicode)
+def is_string(msg=None):
+    @functools.wraps(is_string)
     def f(value, context=None):
         if isinstance(value, str):
             return value
         else:
-            raise Invalid(_msg(msg, 'is_unicode', 'not unicode'))
+            raise Invalid(_msg(msg, 'is_string', 'not string'))
     return f
 
 
-def to_unicode(encoding='utf8', errors='strict', msg=None):
-    @functools.wraps(to_unicode)
+def to_string(encoding='utf8', errors='strict', msg=None):
+    @functools.wraps(to_string)
     def f(value, context=None):
         if isinstance(value, str):
             return value
@@ -314,32 +314,32 @@ def to_unicode(encoding='utf8', errors='strict', msg=None):
     return f
 
 
-def is_string(msg=None):
-    @functools.wraps(is_string)
+def is_bytes(msg=None):
+    @functools.wraps(is_bytes)
     def f(value, context=None):
-        if isinstance(value, str):
+        if isinstance(value, bytes):
             return value
         else:
-            raise Invalid(_msg(msg, 'is_string', 'not string'))
+            raise Invalid(_msg(msg, 'is_bytes', 'not bytes'))
     return f
 
 
-def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
-    @functools.wraps(to_string)
+def to_bytes(encoding='utf8', errors='strict', coerce=True, msg=None):
+    @functools.wraps(to_bytes)
     def f(value, context=None):
-        if isinstance(value, str):
+        if isinstance(value, bytes):
             return value
         elif not coerce:
-            raise Invalid(_msg(msg, 'to_string', 'encoding error'))
+            raise Invalid(_msg(msg, 'to_bytes', 'encoding error'))
         elif value is None:
-            return ''
+            return b''
         else:
             try:
                 return value.encode(encoding, errors)
             except AttributeError:
-                return str(value)
+                return bytes(str(value), encoding)
             except UnicodeError as e:
-                raise Invalid(_msg(msg, 'to_string', 'encoding error'))
+                raise Invalid(_msg(msg, 'to_bytes', 'encoding error'))
     return f
 
 
