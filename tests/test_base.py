@@ -305,7 +305,7 @@ def test_to_scalar():
     assert v.__name__ == "to_scalar"
     assert v([40]) == 40
     assert v(40) == 40
-    assert v(range(40)) == 0
+    assert v(list(range(40))) == 0
 
 
 def test_to_list():
@@ -459,7 +459,7 @@ def test_all_of_2():
     v = V.all_of(V.default(40),
                 V.strip,
                 V.to_integer(msg=messages),
-                V.belongs(range(4, 100, 4), messages),
+                V.belongs(list(range(4, 100, 4)), messages),
                 V.clamp(min=20, max=50, msg=messages))
     assert v(None) == 40
     assert v('40') == 40
@@ -568,7 +568,7 @@ def test_belongs():
 
 def test_not_belongs():
     msg = "belittle my humbug"
-    v = V.not_belongs(range(5), msg=msg)
+    v = V.not_belongs(list(range(5)), msg=msg)
     assert v.__name__ == "not_belongs"
     assert v('pinko') == 'pinko'
     assert_invalid(
@@ -777,19 +777,19 @@ def test_fields_equal():
         {None: 'hog'})
     s = V.Schema({
         'foo': V.to_integer(),
-        ('foo', 'bar'): V.fields_equal(u"foo and bar don't match")})
+        ('foo', 'bar'): V.fields_equal("foo and bar don't match")})
     d = dict(foo='1', bar=1)
     expected = dict(foo=1, bar=1)
     assert s(d) == expected
     # Check field=None
     s = V.Schema({
         'foo': V.to_integer(),
-        ('foo', 'bar'): V.fields_equal(u"foo and bar don't match", field=None)})
+        ('foo', 'bar'): V.fields_equal("foo and bar don't match", field=None)})
     d = dict(foo='1', bar=2)
     with py.test.raises(V.Invalid) as e:
         s(d)
     errors = e.value.unpack_errors()
-    assert errors == {None: u"foo and bar don't match"}
+    assert errors == {None: "foo and bar don't match"}
 
 
 def test_excursion():
@@ -832,13 +832,13 @@ def test_translate():
 def test_to_unicode():
     v = V.to_unicode(msg='cats')
     assert v.__name__ == "to_unicode"
-    assert v(u"brisbane") == u"brisbane"
-    assert v(1) == u"1"
+    assert v("brisbane") == "brisbane"
+    assert v(1) == "1"
     for t in [
-        u'parrots', 'parrots', 1, object(), None,
+        'parrots', 'parrots', 1, object(), None,
         ]:
-        assert isinstance(v(t), unicode)
-    u = u"\N{GREEK CAPITAL LETTER OMEGA} my gawd"
+        assert isinstance(v(t), str)
+    u = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
     s = u.encode('utf-8')
     assert v(s) == u
     with py.test.raises(V.Invalid) as e:
@@ -850,8 +850,8 @@ def test_to_unicode():
 def test_is_unicode():
     v = V.is_unicode(msg="This is not unicode")
     assert v.__name__ == "is_unicode"
-    assert v(u"parrot") == u"parrot"
-    assert isinstance(v(u"parrot"), unicode)
+    assert v("parrot") == "parrot"
+    assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
         v("parrot")
     assert e.value.unpack_errors() == {None: "This is not unicode"}
@@ -865,10 +865,10 @@ def test_to_string():
     assert v.__name__ == "to_string"
     assert v('parrots') == 'parrots'
     for t in [
-        u'parrots', 'parrots', 1, object(), None,
+        'parrots', 'parrots', 1, object(), None,
         ]:
         assert isinstance(v(t), str)
-    u = u"\N{GREEK CAPITAL LETTER OMEGA} my gawd"
+    u = "\N{GREEK CAPITAL LETTER OMEGA} my gawd"
     s = u.encode('utf-8')
     assert v(u) == s
     with py.test.raises(V.Invalid) as e:
@@ -883,7 +883,7 @@ def test_is_string():
     assert v("parrot") == "parrot"
     assert isinstance(v("parrot"), str)
     with py.test.raises(V.Invalid) as e:
-        v(u"parrot")
+        v("parrot")
     assert e.value.unpack_errors() == {None: "This is not a string"}
     with py.test.raises(V.Invalid) as e:
         v(1)
@@ -921,8 +921,8 @@ def test_unpack_3():
 
     u = e.unpack_errors()
     assert set(u) == set(('frog', 'dog', 'insect'))
-    for v in u.itervalues():
-        assert isinstance(v, basestring)
+    for v in u.values():
+        assert isinstance(v, str)
 
     e2 = V.Invalid(dict(frog='squished'))
     u2 = e2.unpack_errors()
@@ -932,8 +932,8 @@ def test_unpack_3():
                  {'' : e2})
     u3 = e3.unpack_errors()
     assert set(u3) == set(('frog', 'dog', 'insect'))
-    for k, v in u3.iteritems():
-        assert isinstance(v, basestring)
+    for k, v in u3.items():
+        assert isinstance(v, str)
 
 
 def test_errors():

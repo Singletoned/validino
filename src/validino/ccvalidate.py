@@ -11,6 +11,7 @@ Carte Blanche, Discover, En Route, and JCB.
 
 import re
 import operator
+from functools import reduce
 
 _numonlyRE = re.compile(r'[- ]')
 
@@ -133,31 +134,29 @@ def check_credit_card(ccnum, cctype=None):
     """
     cc = _numonlyRE.sub('', ccnum)
     try:
-        long(cc)
+        int(cc)
     except ValueError:
-        raise CreditCardValidationException, \
-              "bad characters in card number: %s" % cc
+        raise CreditCardValidationException("bad characters in card number: %s" % cc)
     prefix = prefix_for_ccnum(cc)
     if not prefix:
-        raise UnknownCreditCardPrefixException, cc
+        raise UnknownCreditCardPrefixException(cc)
     foundtype = type_for_prefix(prefix)
     if cctype is not None:
         if cctype not in cards:
-            raise ValueError, "unrecognized card type: %s" % cctype
+            raise ValueError("unrecognized card type: %s" % cctype)
         if foundtype != cctype:
-            raise BadCreditCardTypeException, \
-                  "expected %s, found %s" % (cctype, foundtype)
+            raise BadCreditCardTypeException("expected %s, found %s" % (cctype, foundtype))
     realLengths = length_for_prefix(prefix)
     if not realLengths or len(cc) not in realLengths:
-        raise CreditCardFormatException, "bad length"
-    cc = map(int, list(cc))
+        raise CreditCardFormatException("bad length")
+    cc = list(map(int, list(cc)))
     cc.reverse()
     s = 0
     for i in range(len(cc)):
        s += reduce(operator.add, divmod((1+(i%2))*cc[i], 10))
     # apparently En Route, whatever that is, doesn't use the check bit
     if foundtype != EN_ROUTE and (s % 10) != 0:
-        raise CreditCardFormatException, "wrong check digit"
+        raise CreditCardFormatException("wrong check digit")
 
 def _gen_fake(cctype,
               start=None,
@@ -175,17 +174,16 @@ def _gen_fake(cctype,
     if prefix is None:
         prefix = card_prefix_map[cctype][0]
     elif prefix not in card_prefix_map[cctype]:
-        raise ValueError, "invalid prefix for card type: %s" % prefix
+        raise ValueError("invalid prefix for card type: %s" % prefix)
     if length is None:
         length = prefix_length_map[prefix][0]
     elif length not in prefix_length_map[prefix]:
-        raise ValueError, \
-              "invalid length for card prefix %s: %s" % (prefix, length)
+        raise ValueError("invalid length for card prefix %s: %s" % (prefix, length))
     if start is None:
         start = '%s%s' % (prefix, '0' * (length-len(prefix)))
     elif not (start.startswith(prefix) and len(start) == length):
-        raise ValueError, "starting value %s inconsistent with "\
-              "prefix %s and length %s" % (start, prefix, length)
+        raise ValueError("starting value %s inconsistent with "\
+              "prefix %s and length %s" % (start, prefix, length))
 
     res = []
     while 1:
@@ -198,5 +196,5 @@ def _gen_fake(cctype,
                 break
         except CreditCardFormatException:
             pass
-        start = str(long(start)+1)
+        start = str(int(start)+1)
     return res

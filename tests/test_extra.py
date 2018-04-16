@@ -52,7 +52,7 @@ def test_credit_card_2():
     data['cc_card'] = invalid_cc
     try:
         s(data)
-    except V.Invalid, e:
+    except V.Invalid as e:
         errors = e.unpack_errors()
         assert set(errors.keys()) == set((None, 'cc_card'))
     else:
@@ -61,7 +61,7 @@ def test_credit_card_2():
               cc_type="Frog")
     try:
         s(data)
-    except V.Invalid, e:
+    except V.Invalid as e:
         errors = e.unpack_errors()
         assert set(errors.keys()) == set((None, 'cc_type'))
     else:
@@ -82,7 +82,7 @@ def test_credit_card_3():
               cc_type='')
     try:
         s(data)
-    except V.Invalid, e:
+    except V.Invalid as e:
         errors = e.unpack_errors()
         assert set(errors) == set(('cc_card', 'cc_type', None))
     else:

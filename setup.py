@@ -8,13 +8,13 @@ syntax.
 platforms="OS Independent"
 
 keywords=["validation", "forms"]
-classifiers=filter(None, """
+classifiers=[_f for _f in """
 Development Status :: 4 - Beta
 Intended Audience :: Developers
 Operating System :: OS Independent
 Programming Language :: Python
 Topic :: Software Development :: Libraries :: Python Modules
-""".split('\n'))
+""".split('\n') if _f]
 
 __data__ = dict(
     author='Jacob Smullyan',

@@ -4,10 +4,10 @@
 Some validators commonly used in web applications.
 """
 
-import httplib
+import http.client
 import re
 import socket
-import urlparse
+import urllib.parse
 
 from validino.base import Invalid, _msg, regex
 import validino.ccvalidate as _cc
@@ -36,7 +36,7 @@ __all__ = [
 
 def email(check_dns=False, msg=None):
     if check_dns and DNS is None:
-        raise RuntimeError, "pyDNS not installed, cannot check DNS"
+        raise RuntimeError("pyDNS not installed, cannot check DNS")
     def f(value):
         try:
             username, domain = value.split('@', 1)
@@ -58,7 +58,7 @@ def email(check_dns=False, msg=None):
                 if not a:
                     a = DNS.DnsRequest(domain, qtype='a').req().answers
                 dnsdomains = [x['data'] for x in a]
-            except (socket.error, DNS.DNSError), e:
+            except (socket.error, DNS.DNSError) as e:
                 raise Invalid(_msg(f.msg,
                                    'email.socket_error',
                                    'socket error'))
@@ -140,7 +140,7 @@ def url(check_exists=False,
         if f.check_exists and set(f.schemas).difference(set(('http', 'https'))):
             m = "existence check not supported for schemas other than http and https"
             raise RuntimeError(m)
-        schema, netloc, path, params, query, fragment = urlparse.urlparse(value)
+        schema, netloc, path, params, query, fragment = urllib.parse.urlparse(value)
         if schema not in f.schemas:
             raise Invalid(_msg(f.msg,
                                "url.schema",
@@ -150,20 +150,20 @@ def url(check_exists=False,
         if netloc == '' and f.default_host:
             netloc = f.default_host
 
-        url = urlparse.urlunparse((schema, netloc, path, params, query, fragment))
+        url = urllib.parse.urlunparse((schema, netloc, path, params, query, fragment))
         if f.check_exists:
-            newpath = urlparse.urlunparse(('', '', path, params, query, fragment))
+            newpath = urllib.parse.urlunparse(('', '', path, params, query, fragment))
             if schema == 'http':
-                conn = httplib.HTTPConnection
+                conn = http.client.HTTPConnection
             elif schema == 'https':
-                conn = httplib.HTTPSConnection
+                conn = http.client.HTTPSConnection
             else:
                 assert False, "not reached"
             try:
                 c = conn(netloc)
                 c.request('HEAD', newpath)
                 res = c.getresponse()
-            except (httplib.HTTPException, socket.error), e:
+            except (http.client.HTTPException, socket.error) as e:
                 raise Invalid(_msg(f.msg,
                                    "url.http_error",
                                    "http error"))

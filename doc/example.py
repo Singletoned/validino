@@ -75,7 +75,7 @@ data=getDataFromSomewhere()
 
 try:
     converted=schema(data)
-except Invalid, e:
+except Invalid as e:
     errors=e.unpack_errors()
     doSomethingWithErrors(errors, data)
 else:

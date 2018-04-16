@@ -106,10 +106,10 @@ def dict_unnest(data, separator='.'):
     This is the inverse operation of dict_nest().
     """
     res = {}
-    for k, v in data.iteritems():
+    for k, v in data.items():
         if isinstance(v, dict):
             v = dict_unnest(v, separator)
-            for k1, v1 in v.iteritems():
+            for k1, v1 in v.items():
                 res["%s%s%s" % (k, separator, k1)] = v1
         else:
             res[k] = v
@@ -131,7 +131,7 @@ class Invalid(Exception):
     def _unpack_error(self, name, error):
         if isinstance(error, dict):
             result = dict(
-                [self._unpack_error(key, value) for (key, value) in error.iteritems()])
+                [self._unpack_error(key, value) for (key, value) in error.items()])
         elif isinstance(error, (list, tuple)):
             name, result = self._unpack_error(name, error[0])
         elif isinstance(error, Invalid):
@@ -143,20 +143,22 @@ class Invalid(Exception):
 
     def _unpack_errors(self):
         result = dict()
-        for key, value in self.errors.iteritems():
+        for key, value in self.errors.items():
             name, error = self._unpack_error(key, value)
             result[name] = error
 
-        if result.keys() == [None]:
+        keys = list(result.keys())
+
+        if keys == [None]:
             return result[None]
-        elif result.keys() == ['']:
+        elif keys == ['']:
             return result['']
         else:
             return result
 
     def unpack_errors(self):
         result = self._unpack_errors()
-        if isinstance(result, basestring):
+        if isinstance(result, str):
             return {None: result}
         else:
             return result
@@ -245,7 +247,7 @@ class Schema(object):
                 vdata = result.get(k, data.get(k))
             try:
                 tmp = vfunc(vdata, context)
-            except Invalid, e:
+            except Invalid as e:
                 # if the exception specifies a field name,
                 # let that override the key in the validator
                 # dictionary
@@ -258,7 +260,7 @@ class Schema(object):
                     result[k] = tmp
 
         if exceptions:
-            if not exceptions.has_key(None):
+            if None not in exceptions:
                 m = _msg(self.msg, "schema.error",
                          "Problems were found in the submitted data.")
                 exceptions[None] = m
@@ -288,7 +290,7 @@ def translate(mapping, msg=None):
 def is_unicode(msg=None):
     @functools.wraps(is_unicode)
     def f(value, context=None):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return value
         else:
             raise Invalid(_msg(msg, 'is_unicode', 'not unicode'))
@@ -298,16 +300,16 @@ def is_unicode(msg=None):
 def to_unicode(encoding='utf8', errors='strict', msg=None):
     @functools.wraps(to_unicode)
     def f(value, context=None):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return value
         elif value is None:
-            return u''
+            return ''
         else:
             try:
                 return value.decode(encoding, errors)
             except AttributeError:
-                return unicode(value)
-            except UnicodeError, e:
+                return str(value)
+            except UnicodeError as e:
                 raise Invalid(_msg(msg, 'to_unicode', 'encoding error'))
     return f
 
@@ -336,7 +338,7 @@ def to_string(encoding='utf8', errors='strict', coerce=True, msg=None):
                 return value.encode(encoding, errors)
             except AttributeError:
                 return str(value)
-            except UnicodeError, e:
+            except UnicodeError as e:
                 raise Invalid(_msg(msg, 'to_string', 'encoding error'))
     return f
 
@@ -434,7 +436,7 @@ def either(*validators):
         for v in validators:
             try:
                 value = v(value, context=context)
-            except Exception, e:
+            except Exception as e:
                 last_exception = e
             else:
                 return value
@@ -683,7 +685,7 @@ def to_boolean(msg=None, fuzzy=False):
     false_strings = ['false', 'f', 'n', 'no']
     @functools.wraps(to_boolean)
     def f(value, context=None):
-        if fuzzy and isinstance(value, basestring):
+        if fuzzy and isinstance(value, str):
             if value.lower() in true_strings:
                 return True
             elif value.lower() in false_strings:
@@ -765,7 +767,7 @@ def nested(**kwargs):
                 data[k] = v(value[k], context=context)
             except (KeyError, TypeError):
                 errors[k] = "key %r is missing" % k
-            except Invalid, e:
+            except Invalid as e:
                 errors[k] = e
         if errors:
             raise Invalid(errors)
@@ -782,10 +784,10 @@ def nested_many(sub_validator):
         data = dict()
         errors = dict()
         if value:
-            for k, v in value.items():
+            for k, v in list(value.items()):
                 try:
                     data[k] = sub_validator(v, context=context)
-                except Invalid, e:
+                except Invalid as e:
                     errors[k] = e
             if errors:
                 raise Invalid(errors)
