@@ -10,118 +10,15 @@ import socket
 import urllib.parse
 
 from validino.base import Invalid, _msg, regex
-import validino.ccvalidate as _cc
 from validino.util import partial
 
 # lifted from formencode
 _usernameRE = re.compile(r"^[^ \t\n\r@<>()]+$", re.I)
 _domainRE = re.compile(r"^[a-z0-9][a-z0-9\.\-_]*\.[a-z]+$", re.I)
 
-try:
-    import DNS
-except ImportError:
-    DNS = None
-else:
-    try:
-        DNS.DiscoverNameServers()
-    except IOError:
-        DNS = None
-
 __all__ = [
-    'email',
-    'credit_card',
     'ip',
     'url']
-
-
-def email(check_dns=False, msg=None):
-    if check_dns and DNS is None:
-        raise RuntimeError("pyDNS not installed, cannot check DNS")
-    def f(value):
-        try:
-            username, domain = value.split('@', 1)
-        except ValueError:
-            raise Invalid(_msg(f.msg,
-                               'email.format',
-                               'invalid format'))
-        if not _usernameRE.match(username):
-            raise Invalid(_msg(f.msg,
-                               'email.username',
-                               'invalid username'))
-        if not _domainRE.match(domain):
-            raise Invalid(_msg(f.msg,
-                               'email.domain',
-                               'invalid domain'))
-        if f.check_dns:
-            try:
-                a = DNS.DnsRequest(domain, qtype='mx').req().answers
-                if not a:
-                    a = DNS.DnsRequest(domain, qtype='a').req().answers
-                dnsdomains = [x['data'] for x in a]
-            except (socket.error, DNS.DNSError) as e:
-                raise Invalid(_msg(f.msg,
-                                   'email.socket_error',
-                                   'socket error'))
-            if not dnsdomains:
-                raise Invalid(_msg(f.msg,
-                                   'email.domain_error',
-                                   'no such domain'))
-        return value
-    f.check_dns = check_dns
-    f.msg = msg
-    return f
-
-def credit_card(types=None,
-                require_type=False,
-                msg=None,
-                cc_field='cc_number',
-                cc_type_field='cc_type'):
-    if types is None:
-        types = _cc.cards
-
-    def f(values):
-        if isinstance(values, (list, tuple)):
-            cardnumber, cc_type = values
-        else:
-            cardnumber, cc_type = values, None
-
-        exc = Invalid()
-        type_ok = not f.require_type
-
-        if f.require_type and cc_type is None:
-            m = _msg(f.msg,
-                   "credit_card.require_type",
-                   "no credit card type specified")
-            exc.add_error_message(f.cc_type_field, m)
-        elif not (cc_type is None) and cc_type not in f.types:
-            m = _msg(f.msg,
-                   "credit_card.type_check",
-                   "unrecognized credit card type")
-            exc.add_error_message(f.cc_type_field, m)
-        else:
-            type_ok = True
-
-        try:
-            if type_ok:
-                _cc.check_credit_card(cardnumber, cc_type)
-            else:
-                _cc.check_credit_card(cardnumber)
-        except _cc.CreditCardValidationException:
-            m = _msg(f.msg,
-                   "credit_card.invalid",
-                   "invalid credit card number")
-            exc.add_error_message(f.cc_field, m)
-
-        if exc.errors:
-            raise exc
-        else:
-            return values
-    f.types = types
-    f.require_type = require_type
-    f.msg = msg
-    f.cc_field = cc_field
-    f.cc_type_field = cc_type_field
-    return f
 
 _ip_pat = '^%s$' % r'\.'.join(['|'.join([str(x) for x in range(256)]*4)])
 
