@@ -731,7 +731,7 @@ def test_schema_4():
     assert errors == {None: 'flam'}
 
 
-def test_filter_missing():
+def test_filter_extra():
     s = V.Schema(
         dict(
             x=V.to_integer(),
