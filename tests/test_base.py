@@ -743,6 +743,18 @@ def test_filter_extra():
     assert s(d1) == expected
 
 
+def test_filter_missing():
+    s = V.Schema(
+        dict(
+            x=V.to_integer(),
+            y=V.to_integer()),
+        filter_missing=True)
+
+    d1 = dict(foo="bar")
+    expected = dict()
+    assert s(d1) == expected
+
+
 def test_strip():
     assert V.strip('   foo   ') == 'foo'
     assert V.strip(None) == None

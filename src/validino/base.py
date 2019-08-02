@@ -170,13 +170,15 @@ class Schema(object):
         msg=None,
         allow_missing=True,
         allow_extra=True,
-        filter_extra=True
+        filter_extra=True,
+        filter_missing=False,
     ):
         self.subvalidators = subvalidators
         self.msg = msg
         self.allow_missing = allow_missing
         self.allow_extra = allow_extra
         self.filter_extra = filter_extra
+        self.filter_missing = filter_missing
 
     def _keys(self):
         schemakeys = set()
@@ -211,6 +213,9 @@ class Schema(object):
                     raise Invalid(m)
 
         for k in self.subvalidators:
+            if not k in data:
+                if self.filter_missing:
+                    continue
             vfunc = self.subvalidators[k]
             if isinstance(vfunc, (list, tuple)):
                 vfunc = all_of(*vfunc)
